@@ -210,7 +210,7 @@ class _GameScreenState extends State<GameScreen> {
         final dx = _px - enemy.x, dy = _py - enemy.y;
         final d = math.sqrt(dx * dx + dy * dy);
         if (d > playerContactRadius) {
-          final enemySpeed = .0018 + difficultyLevel * .00012;
+          final enemySpeed = .0013 + difficultyLevel * .00008;
           enemy.x += dx / d * enemySpeed;
           enemy.y += dy / d * enemySpeed;
         } else if (enemy.contactCooldown == 0) {
@@ -255,8 +255,9 @@ class _GameScreenState extends State<GameScreen> {
           final d = math.sqrt((_px - enemy.x) * (_px - enemy.x) + (_py - enemy.y) * (_py - enemy.y));
           if (d < best) { best = d; target = enemy; }
         }
-        if (weapon == 'Pocket Radio' && _enemies.isNotEmpty) {
-          target = _enemies[_random.nextInt(_enemies.length)];
+        if (weapon == 'Pocket Radio' && target != null) {
+          final liveEnemies = _enemies.where((enemy) => enemy.hp > 0).toList();
+          target = liveEnemies[_random.nextInt(liveEnemies.length)];
           best = math.sqrt((target.x - _px) * (target.x - _px) + (target.y - _py) * (target.y - _py));
         }
         final isCane = weapon == 'Cane of Consequences' || weapon == 'Upgraded Cane';
@@ -305,8 +306,15 @@ class _GameScreenState extends State<GameScreen> {
                 }
               }
             } else {
-              final shotSpeed = weapon == 'Noisy Grandkid' ? .006 : weapon == 'Bingo Blaster' ? .01 : .012;
-              _shots.add(Shot(_px, _py, dx / d * shotSpeed, dy / d * shotSpeed, weapon));
+              if (weapon == 'Bingo Blaster') {
+                for (var ball = 0; ball < 5; ball++) {
+                  final angle = _random.nextDouble() * math.pi * 2;
+                  _shots.add(Shot(_px, _py, math.cos(angle) * .01, math.sin(angle) * .01, weapon));
+                }
+              } else {
+                final shotSpeed = weapon == 'Noisy Grandkid' ? .006 : .012;
+                _shots.add(Shot(_px, _py, dx / d * shotSpeed, dy / d * shotSpeed, weapon));
+              }
             }
           }
           _weaponCooldowns[weapon] = weapon == 'Noisy Grandkid'
@@ -351,7 +359,11 @@ class _GameScreenState extends State<GameScreen> {
         shot.x += shot.dx; shot.y += shot.dy; shot.life -= .018;
         for (final enemy in _enemies) {
           final hitDistance = math.sqrt((shot.x - enemy.x) * (shot.x - enemy.x) + (shot.y - enemy.y) * (shot.y - enemy.y));
-          final hitRadius = shot.weapon == 'Thermos Tea' ? .06 : .035;
+          final hitRadius = shot.weapon == 'Thermos Tea' || shot.weapon == 'Pocket Radio'
+              ? .06
+              : shot.weapon == 'Garden Hose'
+                  ? .05
+                  : .035;
           if (hitDistance < hitRadius && enemy.hp > 0) {
             final damage = _scaledDamage(shot.weapon == 'Pocket Radio'
                 ? 15
@@ -382,6 +394,8 @@ class _GameScreenState extends State<GameScreen> {
                 ? const Color(0xffffa2a0)
                 : shot.weapon == 'Thermos Tea'
                     ? const Color(0xffffc58a)
+                    : shot.weapon == 'Garden Hose'
+                        ? const Color(0xff70d0e0)
                     : const Color(0xffffd477);
             _damageNumbers.add(DamageNumber(enemy.x, enemy.y, damage, damageColor));
             if (enemy.hp <= 0) {
@@ -996,6 +1010,18 @@ class ArenaPainter extends CustomPainter {
         canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: p, width: 18, height: 13), const Radius.circular(3)), Paint()..color = const Color(0xff6d5f3f).withValues(alpha: phase));
         canvas.drawLine(p + const Offset(-6, -6), p + const Offset(-10, -14), pulse);
         canvas.drawArc(Rect.fromCircle(center: p, radius: 15 + phase * 5), -1.1, 2.2, false, pulse);
+      } else if (shot.weapon == 'Garden Hose') {
+        final water = Paint()
+          ..color = const Color(0xff70d0e0).withValues(alpha: .75 * phase)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4;
+        canvas.drawCircle(p, 8 + phase * 3, Paint()..color = const Color(0xff70d0e0).withValues(alpha: .14 * phase));
+        canvas.drawLine(p + const Offset(-10, 0), p + const Offset(10, 0), water);
+        canvas.drawCircle(p, 4, Paint()..color = const Color(0xffd5f7ff).withValues(alpha: phase));
+      } else if (shot.weapon == 'Bingo Blaster') {
+        canvas.drawCircle(p, 7 + phase * 2, Paint()..color = const Color(0xfff0e2c0).withValues(alpha: phase));
+        canvas.drawCircle(p, 3, Paint()..color = const Color(0xffb54d50).withValues(alpha: phase));
+        canvas.drawCircle(p, 1, Paint()..color = const Color(0xfff0e2c0).withValues(alpha: phase));
       } else if (shot.weapon == 'Reading Glasses') {
         final beam = Paint()
           ..color = const Color(0xff9ca8d4).withValues(alpha: .6 * phase)
