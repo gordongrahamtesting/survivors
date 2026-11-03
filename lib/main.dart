@@ -91,7 +91,7 @@ class _GameScreenState extends State<GameScreen> {
   final _orbs = <Orb>[];
   final _shots = <Shot>[];
   Timer? _timer;
-  double _px = .5, _py = .5, _elapsed = 0, _spawnClock = 0, _swingTimer = 0, _swingAngle = 0, _hitTimer = 0, _trolleyAngle = 0, _globalWeaponCooldown = 0, _trolleyActive = 0, _trolleyCooldown = 0, _teaSplashTimer = 0, _teaSplashX = 0, _teaSplashY = 0;
+  double _px = .5, _py = .5, _elapsed = 0, _spawnClock = 0, _swingTimer = 0, _swingAngle = 0, _hitTimer = 0, _trolleyAngle = 0, _trolleyActive = 0, _trolleyCooldown = 0, _teaSplashTimer = 0, _teaSplashX = 0, _teaSplashY = 0;
   int _xp = 24, _level = 1, _kills = 0, _hp = 86;
   bool _paused = false, _levelUp = false, _gameOver = false, _won = false;
   final _upgradeChoices = <String>[];
@@ -139,7 +139,6 @@ class _GameScreenState extends State<GameScreen> {
       _hitTimer = math.max(0, _hitTimer - .032);
       _teaSplashTimer = math.max(0, _teaSplashTimer - .032);
       _trolleyAngle = (_trolleyAngle + .025) % (math.pi * 2);
-      _globalWeaponCooldown = math.max(0, _globalWeaponCooldown - .032);
       if (_ownedWeapons.contains('Canvas Trolleys')) {
         if (_trolleyActive > 0) {
           _trolleyActive = math.max(0, _trolleyActive - .032);
@@ -248,7 +247,6 @@ class _GameScreenState extends State<GameScreen> {
         }
         final rank = _weaponLevels[weapon] ?? 1;
         final isCane = weapon == 'Cane of Consequences' || weapon == 'Upgraded Cane';
-        if (_globalWeaponCooldown > 0 && !isCane) continue;
         if (cooldown > 0) continue;
         final range = isCane
             ? (weapon == 'Upgraded Cane' ? .16 + rank * .008 : .115 + rank * .006)
@@ -304,9 +302,8 @@ class _GameScreenState extends State<GameScreen> {
                   : weapon == 'Pocket Radio'
                       ? 5
                       : isCane
-                          ? .25
+                          ? 2
                       : 2;
-          if (!isCane) _globalWeaponCooldown = 2;
         }
       }
       if (_ownedWeapons.contains('Canvas Trolleys') && _trolleyActive > 0) {
@@ -452,7 +449,6 @@ class _GameScreenState extends State<GameScreen> {
       _swingTimer = 0;
       _hitTimer = 0;
       _trolleyAngle = 0;
-      _globalWeaponCooldown = 0;
       _trolleyActive = 0;
       _trolleyCooldown = 0;
       _teaSplashTimer = 0;
