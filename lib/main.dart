@@ -105,7 +105,7 @@ class _GameScreenState extends State<GameScreen> {
 
   int _maxHp() => 86 + (_weaponLevels['Lucky Sweater'] ?? 0) * 8;
 
-  double _enemyHealth() => 50 + math.max(0, _level - 1) * 8 + _elapsed / 60 * 6;
+  double _enemyHealth() => 45 + math.max(0, _level - 1) * 8 + _elapsed / 60 * 6;
 
   int _scaledDamage(int baseDamage) =>
       (baseDamage * (1 + math.max(0, _level - 1) * .015)).round();
@@ -259,20 +259,20 @@ class _GameScreenState extends State<GameScreen> {
         final isCane = weapon == 'Cane of Consequences' || weapon == 'Upgraded Cane';
         if (cooldown > 0) continue;
         final range = isCane
-            ? (weapon == 'Upgraded Cane' ? .14 : .10)
+            ? (weapon == 'Upgraded Cane' ? .15 : .12)
             : weapon == 'Pocket Radio'
                 ? 2.0
                 : 1.2;
         final canFire = target != null && (!isCane || best < range);
         if (canFire) {
           if (isCane) {
-            final reach = weapon == 'Upgraded Cane' ? .14 : .10;
+            final reach = weapon == 'Upgraded Cane' ? .15 : .12;
             _swingTimer = .22;
             _swingAngle = math.atan2(target.y - _py, target.x - _px);
             for (final enemy in _enemies) {
               final distance = math.sqrt((enemy.x - _px) * (enemy.x - _px) + (enemy.y - _py) * (enemy.y - _py));
               if (distance < reach) {
-                final damage = weapon == 'Upgraded Cane' ? 18 : 12;
+                final damage = weapon == 'Upgraded Cane' ? 26 : 20;
                 enemy.hp -= _scaledDamage(damage);
                 _damageNumbers.add(DamageNumber(enemy.x, enemy.y, damage, const Color(0xffc7e2ee)));
                 if (enemy.hp <= 0) {
