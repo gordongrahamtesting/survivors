@@ -190,7 +190,8 @@ class _GameScreenState extends State<GameScreen> {
       );
       if (_spawnClock > spawnInterval) {
         _spawnClock = 0;
-        final spawns = 1 + difficultyLevel ~/ 4;
+        final maxEnemies = 15 + math.max(0, _level - 5) * 4;
+        final spawns = math.min(1 + difficultyLevel ~/ 4, maxEnemies - _enemies.length);
         for (var spawn = 0; spawn < spawns; spawn++) {
           final edge = _random.nextInt(4);
           final x = edge == 0 ? .03 : edge == 1 ? .97 : _random.nextDouble();
