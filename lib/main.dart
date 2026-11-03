@@ -103,10 +103,12 @@ class _GameScreenState extends State<GameScreen> {
   final _damageNumbers = <DamageNumber>[];
   final _shockwaves = <Shockwave>[];
 
-  double _enemyHealth() => 50 + math.max(0, _level - 10) * 15;
+  int _maxHp() => 86 + (_weaponLevels['Lucky Sweater'] ?? 0) * 8;
+
+  double _enemyHealth() => 50 + math.max(0, _level - 1) * 8 + _elapsed / 60 * 6;
 
   int _scaledDamage(int baseDamage) =>
-      (baseDamage * (1 + math.max(0, _level - 1) * .04)).round();
+      (baseDamage * (1 + math.max(0, _level - 1) * .015)).round();
 
   @override
   void initState() {
@@ -181,7 +183,7 @@ class _GameScreenState extends State<GameScreen> {
       _px = _px.clamp(.08, .92);
       _py = _py.clamp(.12, .9);
 
-      final difficultyLevel = math.max(0, _level - 10);
+      final difficultyLevel = math.max(0, _level - 1);
       final spawnInterval = math.max(
         .45,
         1.5 - _elapsed / 100 - difficultyLevel * .06,
@@ -209,7 +211,8 @@ class _GameScreenState extends State<GameScreen> {
           enemy.x += dx / d * enemySpeed;
           enemy.y += dy / d * enemySpeed;
         } else if (enemy.contactCooldown == 0) {
-          _hp = math.max(0, _hp - (3 + difficultyLevel ~/ 3));
+          final contactDamage = math.max(1, 3 + difficultyLevel ~/ 3 - (_weaponLevels['Lucky Sweater'] ?? 0));
+          _hp = math.max(0, _hp - contactDamage);
           _hitTimer = .2;
           enemy.contactCooldown = .8;
           if (_hp == 0) _gameOver = true;
@@ -231,9 +234,17 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       for (final weapon in _ownedWeapons) {
-        final cooldown = math.max(0.0, (_weaponCooldowns[weapon] ?? 0) - .032).toDouble();
+        final cooldownRate = 1 + (_weaponLevels['Silver Watch'] ?? 0) * .1;
+        final cooldown = math.max(0.0, (_weaponCooldowns[weapon] ?? 0) - .032 * cooldownRate).toDouble();
         _weaponCooldowns[weapon] = cooldown;
-        if (weapon == 'Canvas Trolleys' || weapon == 'Comfy Slippers' || weapon == 'Reading Glasses' || weapon == 'Helping Hand') continue;
+        if (weapon == 'Canvas Trolleys' ||
+            weapon == 'Comfy Slippers' ||
+            weapon == 'Reading Glasses' ||
+            weapon == 'Helping Hand' ||
+            weapon == 'Lucky Sweater' ||
+            weapon == 'Silver Watch') {
+          continue;
+        }
         Enemy? target;
         var best = 99.0;
         for (final enemy in _enemies) {
@@ -245,25 +256,25 @@ class _GameScreenState extends State<GameScreen> {
           target = _enemies[_random.nextInt(_enemies.length)];
           best = math.sqrt((target.x - _px) * (target.x - _px) + (target.y - _py) * (target.y - _py));
         }
-        final rank = _weaponLevels[weapon] ?? 1;
         final isCane = weapon == 'Cane of Consequences' || weapon == 'Upgraded Cane';
         if (cooldown > 0) continue;
         final range = isCane
-            ? (weapon == 'Upgraded Cane' ? .16 + rank * .008 : .115 + rank * .006)
+            ? (weapon == 'Upgraded Cane' ? .14 : .10)
             : weapon == 'Pocket Radio'
                 ? 2.0
                 : 1.2;
         final canFire = target != null && (!isCane || best < range);
         if (canFire) {
           if (isCane) {
-            final reach = weapon == 'Upgraded Cane' ? .16 + rank * .008 : .115 + rank * .006;
+            final reach = weapon == 'Upgraded Cane' ? .14 : .10;
             _swingTimer = .22;
             _swingAngle = math.atan2(target.y - _py, target.x - _px);
             for (final enemy in _enemies) {
               final distance = math.sqrt((enemy.x - _px) * (enemy.x - _px) + (enemy.y - _py) * (enemy.y - _py));
               if (distance < reach) {
-                enemy.hp -= _scaledDamage(weapon == 'Upgraded Cane' ? 35 : 25);
-                _damageNumbers.add(DamageNumber(enemy.x, enemy.y, weapon == 'Upgraded Cane' ? 35 : 25, const Color(0xffc7e2ee)));
+                final damage = weapon == 'Upgraded Cane' ? 18 : 12;
+                enemy.hp -= _scaledDamage(damage);
+                _damageNumbers.add(DamageNumber(enemy.x, enemy.y, damage, const Color(0xffc7e2ee)));
                 if (enemy.hp <= 0) {
                   _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .1 ? 1 : 0));
                   _kills++;
@@ -291,7 +302,7 @@ class _GameScreenState extends State<GameScreen> {
                 }
               }
             } else {
-              final shotSpeed = weapon == 'Noisy Grandkid' ? .006 : .012;
+              final shotSpeed = weapon == 'Noisy Grandkid' ? .006 : weapon == 'Bingo Blaster' ? .01 : .012;
               _shots.add(Shot(_px, _py, dx / d * shotSpeed, dy / d * shotSpeed, weapon));
             }
           }
@@ -302,8 +313,12 @@ class _GameScreenState extends State<GameScreen> {
                   : weapon == 'Pocket Radio'
                       ? 5
                       : isCane
-                          ? 2
-                      : 2;
+                              ? 3
+                          : weapon == 'Bingo Blaster'
+                              ? 3.5
+                          : weapon == 'Garden Hose'
+                              ? 4.5
+                          : 2;
         }
       }
       if (_ownedWeapons.contains('Canvas Trolleys') && _trolleyActive > 0) {
@@ -338,10 +353,14 @@ class _GameScreenState extends State<GameScreen> {
             final damage = _scaledDamage(shot.weapon == 'Pocket Radio'
                 ? 15
                 : shot.weapon == 'Noisy Grandkid'
-                ? 40
-                : shot.weapon == 'Thermos Tea'
-                    ? 35
-                    : 30);
+                    ? 40
+                    : shot.weapon == 'Thermos Tea'
+                        ? 35
+                        : shot.weapon == 'Garden Hose'
+                            ? 24
+                            : shot.weapon == 'Bingo Blaster'
+                                ? 22
+                                : 30);
             if (shot.weapon == 'Pocket Radio') {
               _shockwaves.add(Shockwave(shot.x, shot.y));
               final pushX = enemy.x - shot.x;
@@ -388,18 +407,17 @@ class _GameScreenState extends State<GameScreen> {
         }
         if (distance < .055) {
           _xp += orb.type == 0 ? 2 : 0;
-          if (orb.type == 1) _hp = math.min(100, _hp + 14);
+          if (orb.type == 1) _hp = math.min(_maxHp(), _hp + 14);
           orb.x = -1;
         }
       }
       _orbs.removeWhere((o) => o.x < 0);
-      final xpToLevel = 45 + _level * 20;
+      final xpToLevel = 70 + _level * 35;
       if (_xp >= xpToLevel) {
         _level++;
         _xp -= xpToLevel;
         final upgradePool = [
           'Werthers Originals',
-          'Upgraded Cane',
           'Noisy Grandkid',
           'Canvas Trolleys',
           'Thermos Tea',
@@ -407,7 +425,16 @@ class _GameScreenState extends State<GameScreen> {
           'Pocket Radio',
           'Comfy Slippers',
           'Helping Hand',
-        ]..shuffle(_random);
+          'Bingo Blaster',
+          'Garden Hose',
+          'Lucky Sweater',
+          'Silver Watch',
+        ];
+        if (_ownedWeapons.contains('Cane of Consequences') &&
+            !_ownedWeapons.contains('Upgraded Cane')) {
+          upgradePool.add('Upgraded Cane');
+        }
+        upgradePool.shuffle(_random);
         _upgradeChoices
           ..clear()
           ..addAll(upgradePool.take(3));
@@ -422,7 +449,7 @@ class _GameScreenState extends State<GameScreen> {
       if (name == 'Upgraded Cane') {
         _ownedWeapons.remove('Cane of Consequences');
         _ownedWeapons.add(name);
-        final rank = math.min(5, (_weaponLevels['Cane of Consequences'] ?? 1) + 1);
+        final rank = 1;
         _weaponLevels.remove('Cane of Consequences');
         _weaponLevels[name] = rank;
         final previousCooldown = _weaponCooldowns.remove('Cane of Consequences') ?? 0;
@@ -513,7 +540,7 @@ class _GameScreenState extends State<GameScreen> {
                   _Hud(level: _level, xp: _xp, hp: _hp, kills: _kills, elapsed: _elapsed),
                   _WeaponBar(
                     title: 'WEAPONS',
-                    weapons: _ownedWeapons.where((weapon) => weapon != 'Cane of Consequences' && weapon != 'Upgraded Cane' && weapon != 'Comfy Slippers' && weapon != 'Reading Glasses').toList(),
+                    weapons: _ownedWeapons.where((weapon) => weapon != 'Cane of Consequences' && weapon != 'Upgraded Cane' && weapon != 'Comfy Slippers' && weapon != 'Reading Glasses' && weapon != 'Helping Hand' && weapon != 'Lucky Sweater' && weapon != 'Silver Watch').toList(),
                     cooldowns: {
                       ..._weaponCooldowns,
                       'Canvas Trolleys': _trolleyCooldown,
@@ -523,7 +550,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   _WeaponBar(
                     title: 'PASSIVES',
-                    weapons: _ownedWeapons.where((weapon) => weapon == 'Comfy Slippers' || weapon == 'Reading Glasses' || weapon == 'Helping Hand').toList(),
+                    weapons: _ownedWeapons.where((weapon) => weapon == 'Comfy Slippers' || weapon == 'Reading Glasses' || weapon == 'Helping Hand' || weapon == 'Lucky Sweater' || weapon == 'Silver Watch').toList(),
                     cooldowns: const {},
                     levels: _weaponLevels,
                     bottom: 88,
@@ -620,6 +647,10 @@ class _WeaponBar extends StatelessWidget {
     if (weapon == 'Thermos Tea') return '☕';
     if (weapon == 'Reading Glasses') return '⌕';
     if (weapon == 'Helping Hand') return '☝';
+    if (weapon == 'Lucky Sweater') return '♥';
+    if (weapon == 'Silver Watch') return '◷';
+    if (weapon == 'Bingo Blaster') return '✦';
+    if (weapon == 'Garden Hose') return '≈';
     if (weapon == 'Pocket Radio') return '♫';
     return '⌁';
   }
@@ -633,6 +664,10 @@ class _WeaponBar extends StatelessWidget {
     if (weapon == 'Thermos Tea') return 'TEA';
     if (weapon == 'Reading Glasses') return 'FOCUS';
     if (weapon == 'Helping Hand') return 'MAGNET';
+    if (weapon == 'Lucky Sweater') return 'SWEATER';
+    if (weapon == 'Silver Watch') return 'WATCH';
+    if (weapon == 'Bingo Blaster') return 'BINGO';
+    if (weapon == 'Garden Hose') return 'HOSE';
     if (weapon == 'Pocket Radio') return 'RADIO';
     if (weapon == 'Noisy Grandkid') return 'BABY';
     return 'ITEM';
@@ -809,13 +844,25 @@ class _UpgradeOverlay extends StatelessWidget {
         return _card('靴', weapon, 'A little extra pep in every step.', const Color(0xffb98d68));
       case 'Helping Hand':
         return _card('☝', weapon, 'Pulls nearby XP and rations in from farther away.', const Color(0xffd5a56a));
+      case 'Lucky Sweater':
+        return _card('♥', weapon, 'Adds health and softens enemy contact damage.', const Color(0xffd27d88));
+      case 'Silver Watch':
+        return _card('◷', weapon, 'Shortens every weapon cooldown a little.', const Color(0xffb5c5d6));
+      case 'Bingo Blaster':
+        return _card('✦', weapon, 'A slow, heavy bingo ball with a satisfying thump.', const Color(0xffd8b15f));
+      case 'Garden Hose':
+        return _card('≈', weapon, 'Steady water shots keep the crowd at bay.', const Color(0xff70b6c4));
       default:
         return const SizedBox.shrink();
     }
   }
 
   Widget _card(String icon, String weapon, String copy, Color color) {
-    final isPassive = weapon == 'Comfy Slippers' || weapon == 'Reading Glasses' || weapon == 'Helping Hand';
+    final isPassive = weapon == 'Comfy Slippers' ||
+        weapon == 'Reading Glasses' ||
+        weapon == 'Helping Hand' ||
+        weapon == 'Lucky Sweater' ||
+        weapon == 'Silver Watch';
     return _Card(
       icon: icon,
       title: _title(weapon),
