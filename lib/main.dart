@@ -219,7 +219,7 @@ class _GameScreenState extends State<GameScreen> {
         final cooldown = math.max(0.0, (_weaponCooldowns[weapon] ?? 0) - .032).toDouble();
         _weaponCooldowns[weapon] = cooldown;
         if (weapon == 'Canvas Trolleys' || weapon == 'Comfy Slippers' || weapon == 'Reading Glasses' || weapon == 'Helping Hand') continue;
-        if (_globalWeaponCooldown > 0) continue;
+        if (_globalWeaponCooldown > 0 && weapon != 'Thermos Tea') continue;
         if (cooldown > 0) continue;
         Enemy? target;
         var best = 99.0;
