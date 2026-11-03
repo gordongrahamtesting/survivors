@@ -1,0 +1,47 @@
+import 'package:flutter/material.dart';
+import 'enemy_types.dart';
+
+class Enemy {
+  Enemy(this.x, this.y, this.type, this.maxHp);
+  double x;
+  double y;
+  final EnemyType type;
+  final double maxHp;
+  late double hp = maxHp;
+  double stunned = 0;
+  double teaDamageCooldown = 0;
+  double contactCooldown = 0;
+}
+
+class Orb {
+  Orb(this.x, this.y, this.type);
+  double x;
+  double y;
+  final int type; // 0 xp, 1 ration
+}
+
+class Shot {
+  Shot(this.x, this.y, this.dx, this.dy, this.weapon);
+  double x;
+  double y;
+  final double dx;
+  final double dy;
+  final String weapon;
+  double life = 1;
+}
+
+class Shockwave {
+  Shockwave(this.x, this.y);
+  final double x;
+  final double y;
+  double life = 2.4;
+}
+
+class DamageNumber {
+  DamageNumber(this.x, this.y, this.amount, this.color);
+  double x;
+  double y;
+  final int amount;
+  final Color color;
+  double life = 1;
+}
