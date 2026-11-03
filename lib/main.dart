@@ -105,7 +105,7 @@ class _GameScreenState extends State<GameScreen> {
 
   int _maxHp() => 86 + (_weaponLevels['Lucky Sweater'] ?? 0) * 8;
 
-  double _enemyHealth() => 45 + math.max(0, _level - 1) * 8 + _elapsed / 60 * 6;
+  double _enemyHealth() => 38 + math.max(0, _level - 1) * 8 + _elapsed / 60 * 6;
 
   int _scaledDamage(int baseDamage) =>
       (baseDamage * (1 + math.max(0, _level - 1) * .015)).round();
