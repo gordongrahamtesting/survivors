@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -93,7 +93,7 @@ class _GameScreenState extends State<GameScreen> {
   Timer? _timer;
   double _px = .5, _py = .5, _elapsed = 0, _spawnClock = 0, _swingTimer = 0, _swingAngle = 0, _hitTimer = 0, _trolleyAngle = 0, _globalWeaponCooldown = 0, _trolleyActive = 0, _trolleyCooldown = 0, _teaSplashTimer = 0, _teaSplashX = 0, _teaSplashY = 0;
   int _xp = 24, _level = 1, _kills = 0, _hp = 86;
-  bool _paused = false, _levelUp = false, _gameOver = false;
+  bool _paused = false, _levelUp = false, _gameOver = false, _won = false;
   final _upgradeChoices = <String>[];
   String _weapon = 'Cane of Consequences';
   final _ownedWeapons = <String>['Cane of Consequences'];
@@ -104,6 +104,9 @@ class _GameScreenState extends State<GameScreen> {
   final _shockwaves = <Shockwave>[];
 
   double _enemyHealth() => 50 + math.max(0, _level - 10) * 15;
+
+  int _scaledDamage(int baseDamage) =>
+      (baseDamage * (1 + math.max(0, _level - 1) * .04)).round();
 
   @override
   void initState() {
@@ -124,9 +127,13 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _tick() {
-    if (_paused || _levelUp || _gameOver) return;
+    if (_paused || _levelUp || _gameOver || _won) return;
     setState(() {
       _elapsed += .032;
+      if (_elapsed >= 20 * 60) {
+        _won = true;
+        return;
+      }
       _spawnClock += .032;
       _swingTimer = math.max(0, _swingTimer - .032);
       _hitTimer = math.max(0, _hitTimer - .032);
@@ -175,12 +182,20 @@ class _GameScreenState extends State<GameScreen> {
       _px = _px.clamp(.08, .92);
       _py = _py.clamp(.12, .9);
 
-      if (_spawnClock > math.max(.75, 1.5 - _elapsed / 100)) {
+      final difficultyLevel = math.max(0, _level - 10);
+      final spawnInterval = math.max(
+        .45,
+        1.5 - _elapsed / 100 - difficultyLevel * .06,
+      );
+      if (_spawnClock > spawnInterval) {
         _spawnClock = 0;
-        final edge = _random.nextInt(4);
-        final x = edge == 0 ? .03 : edge == 1 ? .97 : _random.nextDouble();
-        final y = edge == 2 ? .12 : edge == 3 ? .9 : .12 + _random.nextDouble() * .78;
-        _enemies.add(Enemy(x, y, _random.nextInt(4), _enemyHealth()));
+        final spawns = 1 + difficultyLevel ~/ 4;
+        for (var spawn = 0; spawn < spawns; spawn++) {
+          final edge = _random.nextInt(4);
+          final x = edge == 0 ? .03 : edge == 1 ? .97 : _random.nextDouble();
+          final y = edge == 2 ? .12 : edge == 3 ? .9 : .12 + _random.nextDouble() * .78;
+          _enemies.add(Enemy(x, y, _random.nextInt(4), _enemyHealth()));
+        }
       }
       const playerContactRadius = .045;
       for (final enemy in _enemies) {
@@ -191,10 +206,11 @@ class _GameScreenState extends State<GameScreen> {
         final dx = _px - enemy.x, dy = _py - enemy.y;
         final d = math.sqrt(dx * dx + dy * dy);
         if (d > playerContactRadius) {
-          enemy.x += dx / d * .0018;
-          enemy.y += dy / d * .0018;
+          final enemySpeed = .0018 + difficultyLevel * .00012;
+          enemy.x += dx / d * enemySpeed;
+          enemy.y += dy / d * enemySpeed;
         } else if (enemy.contactCooldown == 0) {
-          _hp = math.max(0, _hp - 3);
+          _hp = math.max(0, _hp - (3 + difficultyLevel ~/ 3));
           _hitTimer = .2;
           enemy.contactCooldown = .8;
           if (_hp == 0) _gameOver = true;
@@ -204,7 +220,7 @@ class _GameScreenState extends State<GameScreen> {
         for (final enemy in _enemies) {
           final splashDistance = math.sqrt((enemy.x - _teaSplashX) * (enemy.x - _teaSplashX) + (enemy.y - _teaSplashY) * (enemy.y - _teaSplashY));
           if (splashDistance < .16 && enemy.hp > 0 && enemy.teaDamageCooldown == 0) {
-            enemy.hp -= 12;
+            enemy.hp -= _scaledDamage(12);
             enemy.teaDamageCooldown = .35;
             _damageNumbers.add(DamageNumber(enemy.x, enemy.y, 12, const Color(0xffffc58a)));
             if (enemy.hp <= 0) {
@@ -219,8 +235,6 @@ class _GameScreenState extends State<GameScreen> {
         final cooldown = math.max(0.0, (_weaponCooldowns[weapon] ?? 0) - .032).toDouble();
         _weaponCooldowns[weapon] = cooldown;
         if (weapon == 'Canvas Trolleys' || weapon == 'Comfy Slippers' || weapon == 'Reading Glasses' || weapon == 'Helping Hand') continue;
-        if (_globalWeaponCooldown > 0 && weapon != 'Thermos Tea') continue;
-        if (cooldown > 0) continue;
         Enemy? target;
         var best = 99.0;
         for (final enemy in _enemies) {
@@ -234,6 +248,8 @@ class _GameScreenState extends State<GameScreen> {
         }
         final rank = _weaponLevels[weapon] ?? 1;
         final isCane = weapon == 'Cane of Consequences' || weapon == 'Upgraded Cane';
+        if (_globalWeaponCooldown > 0 && !isCane) continue;
+        if (cooldown > 0) continue;
         final range = isCane
             ? (weapon == 'Upgraded Cane' ? .16 + rank * .008 : .115 + rank * .006)
             : weapon == 'Pocket Radio'
@@ -248,7 +264,7 @@ class _GameScreenState extends State<GameScreen> {
             for (final enemy in _enemies) {
               final distance = math.sqrt((enemy.x - _px) * (enemy.x - _px) + (enemy.y - _py) * (enemy.y - _py));
               if (distance < reach) {
-                enemy.hp -= weapon == 'Upgraded Cane' ? 35 : 25;
+                enemy.hp -= _scaledDamage(weapon == 'Upgraded Cane' ? 35 : 25);
                 _damageNumbers.add(DamageNumber(enemy.x, enemy.y, weapon == 'Upgraded Cane' ? 35 : 25, const Color(0xffc7e2ee)));
                 if (enemy.hp <= 0) {
                   _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .1 ? 1 : 0));
@@ -266,7 +282,7 @@ class _GameScreenState extends State<GameScreen> {
               for (final enemy in _enemies) {
                 final splashDistance = math.sqrt((enemy.x - target.x) * (enemy.x - target.x) + (enemy.y - target.y) * (enemy.y - target.y));
                 if (splashDistance < .16 && enemy.hp > 0) {
-                  enemy.hp -= 35;
+                  enemy.hp -= _scaledDamage(35);
                   enemy.teaDamageCooldown = .35;
                   _damageNumbers.add(DamageNumber(enemy.x, enemy.y, 35, const Color(0xffffc58a)));
                   if (enemy.hp <= 0) {
@@ -287,6 +303,8 @@ class _GameScreenState extends State<GameScreen> {
                   ? 10
                   : weapon == 'Pocket Radio'
                       ? 5
+                      : isCane
+                          ? .25
                       : 2;
           if (!isCane) _globalWeaponCooldown = 2;
         }
@@ -301,7 +319,7 @@ class _GameScreenState extends State<GameScreen> {
           for (final enemy in _enemies) {
             final distance = math.sqrt((enemy.x - trolleyX) * (enemy.x - trolleyX) + (enemy.y - trolleyY) * (enemy.y - trolleyY));
             if (distance < .035 && enemy.hp > 0) {
-              enemy.hp -= 20 + trolleyRank * 5;
+              enemy.hp -= _scaledDamage(20 + trolleyRank * 5);
               _trolleyHitTimers[i] = .24;
               _damageNumbers.add(DamageNumber(enemy.x, enemy.y, 20 + trolleyRank * 5, const Color(0xffc6e8ae)));
               if (enemy.hp <= 0) {
@@ -320,13 +338,13 @@ class _GameScreenState extends State<GameScreen> {
           final hitDistance = math.sqrt((shot.x - enemy.x) * (shot.x - enemy.x) + (shot.y - enemy.y) * (shot.y - enemy.y));
           final hitRadius = shot.weapon == 'Thermos Tea' ? .06 : .035;
           if (hitDistance < hitRadius && enemy.hp > 0) {
-            final damage = shot.weapon == 'Pocket Radio'
+            final damage = _scaledDamage(shot.weapon == 'Pocket Radio'
                 ? 15
                 : shot.weapon == 'Noisy Grandkid'
                 ? 40
                 : shot.weapon == 'Thermos Tea'
                     ? 35
-                    : 30;
+                    : 30);
             if (shot.weapon == 'Pocket Radio') {
               _shockwaves.add(Shockwave(shot.x, shot.y));
               final pushX = enemy.x - shot.x;
@@ -447,6 +465,7 @@ class _GameScreenState extends State<GameScreen> {
       _paused = false;
       _levelUp = false;
       _gameOver = false;
+      _won = false;
       _weapon = 'Cane of Consequences';
       _ownedWeapons
         ..clear()
@@ -521,7 +540,8 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   if (_paused) const _PauseBanner(),
                   if (_levelUp) _UpgradeOverlay(level: _level, levels: _weaponLevels, choices: _upgradeChoices, onChoose: _chooseUpgrade),
-                  if (_gameOver) _GameOverOverlay(level: _level, kills: _kills, elapsed: _elapsed, onRestart: _restartGame),
+                  if (_gameOver) _GameOverOverlay(level: _level, kills: _kills, elapsed: _elapsed, won: false, onRestart: _restartGame),
+                  if (_won) _GameOverOverlay(level: _level, kills: _kills, elapsed: _elapsed, won: true, onRestart: _restartGame),
                 ],
               );
             }),
@@ -712,9 +732,10 @@ class _PauseBanner extends StatelessWidget {
 }
 
 class _GameOverOverlay extends StatelessWidget {
-  const _GameOverOverlay({required this.level, required this.kills, required this.elapsed, required this.onRestart});
+  const _GameOverOverlay({required this.level, required this.kills, required this.elapsed, required this.won, required this.onRestart});
   final int level, kills;
   final double elapsed;
+  final bool won;
   final VoidCallback onRestart;
 
   @override
@@ -733,7 +754,7 @@ class _GameOverOverlay extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('GAME OVER', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 4, color: Color(0xffef8b79))),
+                Text(won ? '20 MINUTES!' : 'GAME OVER', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 4, color: won ? const Color(0xffffc15b) : const Color(0xffef8b79))),
                 const SizedBox(height: 12),
                 Text('RUN TIME ${_formatDuration(elapsed)}', style: const TextStyle(color: Colors.white70, letterSpacing: 1)),
                 const SizedBox(height: 8),
