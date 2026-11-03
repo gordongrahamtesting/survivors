@@ -105,6 +105,8 @@ class _GameScreenState extends State<GameScreen> {
 
   int _maxHp() => 86 + (_weaponLevels['Lucky Sweater'] ?? 0) * 8;
 
+  int _xpToLevel() => 70 + _level * 35;
+
   double _enemyHealth() => 38 + math.max(0, _level - 1) * 8 + _elapsed / 60 * 6;
 
   int _scaledDamage(int baseDamage) =>
@@ -413,7 +415,7 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       _orbs.removeWhere((o) => o.x < 0);
-      final xpToLevel = 70 + _level * 35;
+      final xpToLevel = _xpToLevel();
       if (_xp >= xpToLevel) {
         _level++;
         _xp -= xpToLevel;
@@ -538,7 +540,7 @@ class _GameScreenState extends State<GameScreen> {
                     painter: ArenaPainter(_px, _py, _enemies, _orbs, _shots, _damageNumbers, _shockwaves, _trolleyHitTimers, _swingTimer, _swingAngle, _hitTimer, _trolleyAngle, _ownedWeapons.contains('Canvas Trolleys') && _trolleyActive > 0, _teaSplashTimer, _teaSplashX, _teaSplashY, _weapon),
                     size: Size(constraints.maxWidth, constraints.maxHeight),
                   ),
-                  _Hud(level: _level, xp: _xp, hp: _hp, kills: _kills, elapsed: _elapsed),
+                  _Hud(level: _level, xp: _xp, xpToLevel: _xpToLevel(), hp: _hp, kills: _kills, elapsed: _elapsed),
                   _WeaponBar(
                     title: 'WEAPONS',
                     weapons: _ownedWeapons.where((weapon) => weapon != 'Cane of Consequences' && weapon != 'Upgraded Cane' && weapon != 'Comfy Slippers' && weapon != 'Reading Glasses' && weapon != 'Helping Hand' && weapon != 'Lucky Sweater' && weapon != 'Silver Watch').toList(),
@@ -577,8 +579,8 @@ class _GameScreenState extends State<GameScreen> {
 }
 
 class _Hud extends StatelessWidget {
-  const _Hud({required this.level, required this.xp, required this.hp, required this.kills, required this.elapsed});
-  final int level, xp, hp, kills;
+  const _Hud({required this.level, required this.xp, required this.xpToLevel, required this.hp, required this.kills, required this.elapsed});
+  final int level, xp, xpToLevel, hp, kills;
   final double elapsed;
   @override
   Widget build(BuildContext context) {
@@ -599,9 +601,9 @@ class _Hud extends StatelessWidget {
           _Stat(label: 'KILLS', value: '$kills'),
           const SizedBox(width: 30),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('LEVEL $level  •  XP $xp / ${45 + level * 20}', style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold)),
+            Text('LEVEL $level  •  XP $xp / $xpToLevel', style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold)),
             const SizedBox(height: 7),
-            SizedBox(width: 190, child: ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: xp / (45 + level * 20), minHeight: 6, color: const Color(0xffe6a84d), backgroundColor: Colors.white12))),
+            SizedBox(width: 190, child: ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: (xp / xpToLevel).clamp(0.0, 1.0), minHeight: 6, color: const Color(0xffe6a84d), backgroundColor: Colors.white12))),
           ]),
           const SizedBox(width: 24),
           SizedBox(width: 100, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
