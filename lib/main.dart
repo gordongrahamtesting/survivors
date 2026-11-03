@@ -521,7 +521,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   if (_paused) const _PauseBanner(),
                   if (_levelUp) _UpgradeOverlay(level: _level, levels: _weaponLevels, choices: _upgradeChoices, onChoose: _chooseUpgrade),
-                  if (_gameOver) _GameOverOverlay(level: _level, kills: _kills, onRestart: _restartGame),
+                  if (_gameOver) _GameOverOverlay(level: _level, kills: _kills, elapsed: _elapsed, onRestart: _restartGame),
                 ],
               );
             }),
@@ -712,9 +712,9 @@ class _PauseBanner extends StatelessWidget {
 }
 
 class _GameOverOverlay extends StatelessWidget {
-  const _GameOverOverlay({required this.level, required this.kills, required this.onRestart});
-  final int level;
-  final int kills;
+  const _GameOverOverlay({required this.level, required this.kills, required this.elapsed, required this.onRestart});
+  final int level, kills;
+  final double elapsed;
   final VoidCallback onRestart;
 
   @override
@@ -735,6 +735,8 @@ class _GameOverOverlay extends StatelessWidget {
               children: [
                 const Text('GAME OVER', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 4, color: Color(0xffef8b79))),
                 const SizedBox(height: 12),
+                Text('RUN TIME ${_formatDuration(elapsed)}', style: const TextStyle(color: Colors.white70, letterSpacing: 1)),
+                const SizedBox(height: 8),
                 Text('LEVEL $level  •  KILLS $kills', style: const TextStyle(color: Colors.white70, letterSpacing: 1)),
                 const SizedBox(height: 24),
                 ElevatedButton(
@@ -748,6 +750,12 @@ class _GameOverOverlay extends StatelessWidget {
       ),
     ),
   );
+}
+
+String _formatDuration(double elapsed) {
+  final minutes = (elapsed ~/ 60).toString().padLeft(2, '0');
+  final seconds = (elapsed % 60).floor().toString().padLeft(2, '0');
+  return '$minutes:$seconds';
 }
 
 class _UpgradeOverlay extends StatelessWidget {
