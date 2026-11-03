@@ -92,7 +92,7 @@ class _GameScreenState extends State<GameScreen> {
   final _shots = <Shot>[];
   Timer? _timer;
   double _px = .5, _py = .5, _elapsed = 0, _spawnClock = 0, _swingTimer = 0, _swingAngle = 0, _hitTimer = 0, _trolleyAngle = 0, _trolleyActive = 0, _trolleyCooldown = 0, _teaSplashTimer = 0, _teaSplashX = 0, _teaSplashY = 0;
-  int _xp = 24, _level = 1, _kills = 0, _hp = 86;
+  int _xp = 0, _level = 1, _kills = 0, _hp = 86;
   bool _paused = false, _levelUp = false, _gameOver = false, _won = false;
   final _upgradeChoices = <String>[];
   String _weapon = 'Cane of Consequences';
@@ -484,7 +484,7 @@ class _GameScreenState extends State<GameScreen> {
       _teaSplashTimer = 0;
       _teaSplashX = 0;
       _teaSplashY = 0;
-      _xp = 24;
+      _xp = 0;
       _level = 1;
       _kills = 0;
       _hp = 100;
