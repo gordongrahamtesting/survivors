@@ -229,7 +229,7 @@ class _GameScreenState extends State<GameScreen> {
             enemy.teaDamageCooldown = .35;
             _damageNumbers.add(DamageNumber(enemy.x, enemy.y, 12, const Color(0xffffc58a)));
             if (enemy.hp <= 0) {
-              _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .1 ? 1 : 0));
+              _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0));
               _kills++;
               _xp += 4;
             }
@@ -279,7 +279,7 @@ class _GameScreenState extends State<GameScreen> {
                 enemy.hp -= _scaledDamage(damage);
                 _damageNumbers.add(DamageNumber(enemy.x, enemy.y, damage, const Color(0xffc7e2ee)));
                 if (enemy.hp <= 0) {
-                  _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .1 ? 1 : 0));
+                  _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0));
                   _kills++;
                   _xp += 4;
                 }
@@ -298,7 +298,7 @@ class _GameScreenState extends State<GameScreen> {
                   enemy.teaDamageCooldown = .35;
                   _damageNumbers.add(DamageNumber(enemy.x, enemy.y, 35, const Color(0xffffc58a)));
                   if (enemy.hp <= 0) {
-                    _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .1 ? 1 : 0));
+                    _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0));
                     _kills++;
                     _xp += 4;
                   }
@@ -338,7 +338,7 @@ class _GameScreenState extends State<GameScreen> {
               _trolleyHitTimers[i] = .24;
               _damageNumbers.add(DamageNumber(enemy.x, enemy.y, 20 + trolleyRank * 5, const Color(0xffc6e8ae)));
               if (enemy.hp <= 0) {
-                _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .1 ? 1 : 0));
+                _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0));
                 _kills++;
                 _xp += 4;
               }
@@ -385,7 +385,7 @@ class _GameScreenState extends State<GameScreen> {
                     : const Color(0xffffd477);
             _damageNumbers.add(DamageNumber(enemy.x, enemy.y, damage, damageColor));
             if (enemy.hp <= 0) {
-              _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .1 ? 1 : 0));
+              _orbs.add(Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0));
               _kills++;
               _xp += 4;
             }
@@ -949,9 +949,25 @@ class ArenaPainter extends CustomPainter {
     Offset at(double x, double y) => Offset(size.width * x, size.height * y);
     canvas.drawRect(area, Paint()..color = const Color(0xff1a282f).withValues(alpha: .32));
     for (final orb in orbs) {
-      final p = Paint()..color = orb.type == 1 ? const Color(0xffd48855) : const Color(0xff82c6c6);
-      canvas.drawCircle(at(orb.x, orb.y), orb.type == 1 ? 8 : 5, p);
-      canvas.drawCircle(at(orb.x, orb.y), orb.type == 1 ? 13 : 9, Paint()..color = p.color.withValues(alpha: .16));
+      final p = at(orb.x, orb.y);
+      if (orb.type == 1) {
+        final glow = Paint()..color = const Color(0xffd8b15f).withValues(alpha: .18);
+        canvas.drawCircle(p, 14, glow);
+        final pack = Paint()..color = const Color(0xff6f7650);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromCenter(center: p, width: 18, height: 13), const Radius.circular(2)),
+          pack,
+        );
+        canvas.drawLine(p + const Offset(-7, -4), p + const Offset(7, -4), Paint()..color = const Color(0xffaeb27a)..strokeWidth = 2);
+        canvas.drawLine(p + const Offset(0, -6), p + const Offset(0, 6), Paint()..color = const Color(0xff4d5538)..strokeWidth = 2);
+        canvas.drawRect(Rect.fromCenter(center: p + const Offset(0, 1), width: 6, height: 6), Paint()..color = const Color(0xffd8b15f));
+        canvas.drawLine(p + const Offset(-2, 1), p + const Offset(2, 1), Paint()..color = const Color(0xff6f7650)..strokeWidth = 1);
+        canvas.drawLine(p + const Offset(0, -1), p + const Offset(0, 3), Paint()..color = const Color(0xff6f7650)..strokeWidth = 1);
+      } else {
+        final xpPaint = Paint()..color = const Color(0xff82c6c6);
+        canvas.drawCircle(p, 5, xpPaint);
+        canvas.drawCircle(p, 9, Paint()..color = xpPaint.color.withValues(alpha: .16));
+      }
     }
     for (final shot in shots) {
       final p = at(shot.x, shot.y);
