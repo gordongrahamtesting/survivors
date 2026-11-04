@@ -76,6 +76,7 @@ class Orb {
   double x;
   double y;
   final int type; // 0 xp, 1 ration
+  bool pulledToPlayer = false;
 }
 
 class Shot {

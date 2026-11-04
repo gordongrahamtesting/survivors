@@ -127,9 +127,9 @@ class _GameScreenState extends State<GameScreen> {
       Orb(
         x,
         y,
-        roll < .015
+        roll < .01
             ? 2
-            : roll < .075
+            : roll < .035
             ? 1
             : 0,
       ),
@@ -682,9 +682,11 @@ class _GameScreenState extends State<GameScreen> {
         var distance = math.sqrt(dx * dx + dy * dy);
         final helpingHandRank = _weaponLevels['Helping Hand'] ?? 0;
         final magnetRadius = .12 + helpingHandRank * .025;
-        if (distance < magnetRadius && distance > .055) {
-          orb.x += dx / distance * .008;
-          orb.y += dy / distance * .008;
+        if ((distance < magnetRadius || orb.pulledToPlayer) &&
+            distance > .055) {
+          final pullSpeed = orb.pulledToPlayer ? .025 : .008;
+          orb.x += dx / distance * pullSpeed;
+          orb.y += dy / distance * pullSpeed;
           dx = _px - orb.x;
           dy = _py - orb.y;
           distance = math.sqrt(dx * dx + dy * dy);
@@ -693,14 +695,15 @@ class _GameScreenState extends State<GameScreen> {
           if (orb.type == 2) {
             for (final xpOrb in _orbs) {
               if (xpOrb.type == 0 && xpOrb.x >= 0) {
-                _xp += 3;
-                xpOrb.x = -1;
+                xpOrb.pulledToPlayer = true;
               }
             }
           } else {
             _xp += orb.type == 0 ? 3 : 0;
           }
-          if (orb.type == 1) _hp = math.min(_maxHp(), _hp + 14);
+          if (orb.type == 1) {
+            _hp = math.min(_maxHp(), _hp + (_maxHp() / 3).round());
+          }
           orb.x = -1;
         }
       }

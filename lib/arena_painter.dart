@@ -292,6 +292,16 @@ class ArenaPainter extends CustomPainter {
         );
       } else {
         final xpPaint = Paint()..color = const Color(0xffa8ffff);
+        if (orb.pulledToPlayer) {
+          final player = at(px, py);
+          canvas.drawLine(
+            p,
+            p + (player - p) * .35,
+            Paint()
+              ..color = Colors.white.withValues(alpha: .7)
+              ..strokeWidth = 2,
+          );
+        }
         canvas.drawCircle(p, 8, xpPaint);
         canvas.drawCircle(
           p,

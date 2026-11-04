@@ -411,91 +411,91 @@ class UpgradeOverlay extends StatelessWidget {
         return _card(
           '◉',
           weapon,
-          'Hard candy. Harder hits.',
+          'Fires a candy projectile at a nearby enemy.',
           const Color(0xffd98f4a),
         );
       case 'Upgraded Cane':
         return _card(
           '⌁',
           weapon,
-          'The old reliable. Wider bonk radius.',
+          'Replaces the cane with a longer, wider melee swing.',
           const Color(0xff77a8bd),
         );
       case 'Noisy Grandkid':
         return _card(
           '↻',
           weapon,
-          'A baby-shaped boomerang of pure volume.',
+          'Launches a slow, loud projectile at a nearby enemy.',
           const Color(0xffcf6c68),
         );
       case 'Canvas Trolleys':
         return _card(
           '▣',
           weapon,
-          'Five carts orbit Grampa and bonk on contact.',
+          'Five carts orbit Grampa and damage enemies on contact; upgrades spin faster.',
           const Color(0xff91ad83),
         );
       case 'Thermos Tea':
         return _card(
           '☕',
           weapon,
-          'A hot splash that reaches farther.',
+          'Targets an enemy and damages enemies in a large hot splash.',
           const Color(0xffc88c62),
         );
       case 'Reading Glasses':
         return _card(
           '⌕',
           weapon,
-          'Focuses the next attack for a bigger hit.',
+          'A passive upgrade; currently has no additional combat effect.',
           const Color(0xff9ca8d4),
         );
       case 'Pocket Radio':
         return _card(
           '♫',
           weapon,
-          'A shockwave of oldies knocks teens back.',
+          'Stuns every enemy around Grampa for 4 seconds.',
           const Color(0xffd4b35e),
         );
       case 'Comfy Slippers':
         return _card(
           '靴',
           weapon,
-          'A little extra pep in every step.',
+          'Increases Grampa’s movement speed.',
           const Color(0xffb98d68),
         );
       case 'Helping Hand':
         return _card(
           '☝',
           weapon,
-          'Pulls nearby XP and rations in from farther away.',
+          'Increases the pickup radius for XP and rations.',
           const Color(0xffd5a56a),
         );
       case 'Lucky Sweater':
         return _card(
           '♥',
           weapon,
-          'Adds health and softens enemy contact damage.',
+          'Increases maximum health and reduces enemy contact damage.',
           const Color(0xffd27d88),
         );
       case 'Silver Watch':
         return _card(
           '◷',
           weapon,
-          'Shortens every weapon cooldown a little.',
+          'Reduces weapon cooldowns by 10% per rank.',
           const Color(0xffb5c5d6),
         );
       case 'Bingo Blaster':
         return _card(
           '✦',
           weapon,
-          'A slow, heavy bingo ball with a satisfying thump.',
+          'Fires five random-direction bingo balls.',
           const Color(0xffd8b15f),
         );
       case 'Garden Hose':
         return _card(
           '≈',
           weapon,
-          'Steady water shots keep the crowd at bay.',
+          'Fires eight water shots clockwise in all directions.',
           const Color(0xff70b6c4),
         );
       default:
