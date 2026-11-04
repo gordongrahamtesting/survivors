@@ -92,7 +92,7 @@ class _GameScreenState extends State<GameScreen> {
       _teaSplashX = 0,
       _teaSplashY = 0;
   double _walkTime = 0;
-  int _xp = 0, _level = 1, _kills = 0, _hp = 86;
+  int _xp = 0, _level = 1, _kills = 0, _hp = 100;
   bool _paused = false, _levelUp = false, _gameOver = false, _won = false;
   final _upgradeChoices = <String>[];
   String _weapon = 'Cane of Consequences';
@@ -103,7 +103,7 @@ class _GameScreenState extends State<GameScreen> {
   final _damageNumbers = <DamageNumber>[];
   final _shockwaves = <Shockwave>[];
 
-  int _maxHp() => 86 + (_weaponLevels['Lucky Sweater'] ?? 0) * 8;
+  int _maxHp() => 100 + (_weaponLevels['Lucky Sweater'] ?? 0) * 8;
 
   int _xpToLevel() => 52 + _level * 25;
 
