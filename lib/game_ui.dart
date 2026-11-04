@@ -309,6 +309,66 @@ class PauseBanner extends StatelessWidget {
   );
 }
 
+class StartScreenOverlay extends StatelessWidget {
+  const StartScreenOverlay({super.key, required this.onStart});
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+        child: Container(
+          color: const Color(0xff0c1015).withValues(alpha: .94),
+          child: Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xff1a222b),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xffffc15b), width: 2),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 36),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'GRAMPA SURVIVORS',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 4,
+                        color: Color(0xffffc15b),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Defend the park from unruly visitors!',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        letterSpacing: 1,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xffffc15b),
+                        foregroundColor: const Color(0xff0c1015),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      ),
+                      onPressed: onStart,
+                      child: const Text(
+                        'CLICK OR PRESS START',
+                        style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
 class GameOverOverlay extends StatelessWidget {
   const GameOverOverlay({
     super.key,

@@ -22,6 +22,7 @@ class _GameScreenState extends State<GameScreen> {
   final _keys = <LogicalKeyboardKey>{};
   final _focus = FocusNode();
   final _enemies = <Enemy>[];
+  bool _gameStarted = false;
   
   // Gamepad stream subscription and tracking variables
   StreamSubscription<NormalizedGamepadEvent>? _gamepadSubscription;
@@ -321,6 +322,18 @@ class _GameScreenState extends State<GameScreen> {
 
         // 3. Handle Pause with Controller (Start Button)
         if (event.button == GamepadButton.start && event.value != 0) {
+          if (!_gameStarted) {
+            StartScreenOverlay(
+              onStart: () {
+                setState(() {
+                  _gameStarted = true;
+                  _focus.requestFocus();
+                });
+              },
+            );
+            setState(() =>_gameStarted = true);
+            _focus.requestFocus();
+          } else
           if (!_gameOver && !_won && !_levelUp) {
             _paused = !_paused;
           }
@@ -338,7 +351,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _tick() {
-    if (_paused || _levelUp || _gameOver || _won) return;
+    if (!_gameStarted || _paused || _levelUp || _gameOver || _won) return;
     setState(() {
       _elapsed += .032;
       if (_elapsed >= 20 * 60) {
@@ -935,10 +948,16 @@ class _GameScreenState extends State<GameScreen> {
             onKeyEvent: (event) {
               if (event is KeyDownEvent) _keys.add(event.logicalKey);
               if (event is KeyUpEvent) _keys.remove(event.logicalKey);
-              if (event.logicalKey == LogicalKeyboardKey.space &&
-                  event is KeyDownEvent) {
-                setState(() => _paused = !_paused);
-              }
+              if ((event.logicalKey == LogicalKeyboardKey.space || event.logicalKey == LogicalKeyboardKey.enter) &&
+              event is KeyDownEvent) {
+                setState(() {
+                  if (!_gameStarted) {
+                    _gameStarted = true;
+                    } else {
+                      _paused = !_paused;
+                    }
+                  });
+                }
             },
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -1050,6 +1069,13 @@ class _GameScreenState extends State<GameScreen> {
                         elapsed: _elapsed,
                         won: true,
                         onRestart: _restartGame,
+                      ),
+                    if (!_gameStarted)
+                      StartScreenOverlay(
+                        onStart: () {
+                          setState(() => _gameStarted = true);
+                          _focus.requestFocus();
+                        },
                       ),
                   ],
                 );
