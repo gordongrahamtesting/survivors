@@ -398,6 +398,44 @@ class _GameScreenState extends State<GameScreen> {
         final isCane = weaponDefinition.attack == WeaponAttack.cane;
         final isHose = weaponDefinition.attack == WeaponAttack.hose;
         final isRadio = weaponDefinition.attack == WeaponAttack.radio;
+        final isProjectile =
+            weaponDefinition.attack == WeaponAttack.candy ||
+            weaponDefinition.attack == WeaponAttack.noisy;
+        if (isProjectile) {
+          final reserved = _shots
+              .map((shot) => shot.target)
+              .whereType<Enemy>()
+              .toSet();
+          final candidates = _enemies
+              .where((enemy) => enemy.hp > 0 && !reserved.contains(enemy))
+              .toList();
+          if (candidates.isEmpty) {
+            target = null;
+          } else {
+            var totalWeight = 0.0;
+            final weights = <double>[];
+            for (final enemy in candidates) {
+              final dx = enemy.x - _px;
+              final dy = enemy.y - _py;
+              final distance = math.sqrt(dx * dx + dy * dy);
+              final weight = 1 / (.08 + distance);
+              weights.add(weight);
+              totalWeight += weight;
+            }
+            var roll = _random.nextDouble() * totalWeight;
+            for (var i = 0; i < candidates.length; i++) {
+              roll -= weights[i];
+              if (roll <= 0 || i == candidates.length - 1) {
+                target = candidates[i];
+                best = math.sqrt(
+                  (target.x - _px) * (target.x - _px) +
+                      (target.y - _py) * (target.y - _py),
+                );
+                break;
+              }
+            }
+          }
+        }
         if (cooldown > 0) continue;
         final range = weaponDefinition.range;
         final canFire =
@@ -536,6 +574,7 @@ class _GameScreenState extends State<GameScreen> {
                     dx / d * shotSpeed,
                     dy / d * shotSpeed,
                     weapon,
+                    target: firingTarget,
                   ),
                 );
               }

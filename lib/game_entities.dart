@@ -78,12 +78,13 @@ class Orb {
 }
 
 class Shot {
-  Shot(this.x, this.y, this.dx, this.dy, this.weapon);
+  Shot(this.x, this.y, this.dx, this.dy, this.weapon, {this.target});
   double x;
   double y;
   final double dx;
   final double dy;
   final String weapon;
+  final Enemy? target;
   double life = 1;
 }
 
