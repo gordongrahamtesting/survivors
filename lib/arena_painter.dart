@@ -134,18 +134,41 @@ class ArenaPainter extends CustomPainter {
       canvas.translate(p.dx, p.dy);
       canvas.rotate(table.rotation);
       final wood = Paint()..color = const Color(0xff9a633d);
-      canvas.drawRect(const Rect.fromLTWH(-25, -5, 50, 10), wood);
-      canvas.drawRect(const Rect.fromLTWH(-25, 16, 50, 7), wood);
-      canvas.drawRect(const Rect.fromLTWH(-17, -15, 34, 5), wood);
-      canvas.drawLine(
-        const Offset(-17, 7),
-        const Offset(-10, 25),
-        wood..strokeWidth = 3,
+      final tableLength = worldScale * .24;
+      final tableWidth = worldScale * .065;
+      final benchWidth = worldScale * .045;
+      final benchOffset = worldScale * .105;
+      canvas.drawRect(
+        Rect.fromLTWH(
+          -tableLength / 2,
+          -tableWidth / 2,
+          tableLength,
+          tableWidth,
+        ),
+        wood,
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(-tableLength / 2, benchOffset, tableLength, benchWidth),
+        wood,
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(
+          -tableLength / 2,
+          -benchOffset - benchWidth,
+          tableLength,
+          benchWidth,
+        ),
+        wood,
       );
       canvas.drawLine(
-        const Offset(17, 7),
-        const Offset(10, 25),
-        wood..strokeWidth = 3,
+        Offset(-worldScale * .075, tableWidth / 2),
+        Offset(-worldScale * .055, benchOffset + benchWidth),
+        wood..strokeWidth = worldScale * .008,
+      );
+      canvas.drawLine(
+        Offset(worldScale * .075, tableWidth / 2),
+        Offset(worldScale * .055, benchOffset + benchWidth),
+        wood,
       );
       canvas.restore();
     }
