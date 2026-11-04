@@ -16,6 +16,7 @@ class Hud extends StatelessWidget {
   final double elapsed;
   @override
   Widget build(BuildContext context) {
+    final displayedHp = hp.clamp(0, 100);
     final minutes = (elapsed ~/ 60).toString().padLeft(2, '0');
     final seconds = (elapsed % 60).floor().toString().padLeft(2, '0');
     return Positioned(
@@ -89,7 +90,7 @@ class Hud extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'VITALITY  $hp%',
+                    'VITALITY  $displayedHp%',
                     style: const TextStyle(
                       fontSize: 10,
                       letterSpacing: 1,
@@ -100,7 +101,7 @@ class Hud extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: hp / 100,
+                      value: displayedHp / 100,
                       minHeight: 6,
                       color: const Color(0xff7fc87f),
                       backgroundColor: Colors.white12,
@@ -453,7 +454,7 @@ class UpgradeOverlay extends StatelessWidget {
         return _card(
           '♫',
           weapon,
-          'Stuns every enemy around Grampa for 4 seconds.',
+          'Stuns every enemy around Grampa for 2.5 seconds.',
           const Color(0xffd4b35e),
         );
       case 'Comfy Slippers':

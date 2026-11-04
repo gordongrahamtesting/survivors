@@ -131,7 +131,7 @@ class _GameScreenState extends State<GameScreen> {
             ? 2
             : roll < .006
             ? 3
-            : roll < .035
+            : roll < .018
             ? 1
             : 0,
       ),
@@ -293,14 +293,14 @@ class _GameScreenState extends State<GameScreen> {
       final difficultyLevel = math.max(0, _level - 1);
       final pressureStage = _pressureStage();
       final spawnInterval = math.max(
-        .38,
-        1.15 - _elapsed / 100 - difficultyLevel * .05 - pressureStage * .08,
+        .3,
+        1.05 - _elapsed / 105 - difficultyLevel * .05 - pressureStage * .08,
       );
       if (_spawnClock > spawnInterval) {
         _spawnClock = 0;
-        final maxEnemies = 22 + difficultyLevel * 3 + pressureStage * 8;
+        final maxEnemies = 30 + difficultyLevel * 4 + pressureStage * 10;
         final spawns = math.min(
-          1 + difficultyLevel ~/ 3 + pressureStage * 2,
+          2 + difficultyLevel ~/ 3 + pressureStage * 2,
           maxEnemies - _enemies.length,
         );
         for (var spawn = 0; spawn < spawns; spawn++) {
@@ -510,7 +510,7 @@ class _GameScreenState extends State<GameScreen> {
             _shockwaves.add(Shockwave(_px, _py));
             for (final enemy in _enemies) {
               if (enemy.hp <= 0) continue;
-              enemy.stunned = 4;
+              enemy.stunned = 2.5;
               enemy.hp -= _scaledDamage(weaponDefinition.damage);
               _damageNumbers.add(
                 DamageNumber(
@@ -686,7 +686,7 @@ class _GameScreenState extends State<GameScreen> {
         final magnetRadius = .12 + helpingHandRank * .025;
         if ((distance < magnetRadius || orb.pulledToPlayer) &&
             distance > .055) {
-          final pullSpeed = orb.pulledToPlayer ? .025 : .008;
+          final pullSpeed = orb.pulledToPlayer ? .016 : .008;
           orb.x += dx / distance * pullSpeed;
           orb.y += dy / distance * pullSpeed;
           dx = _px - orb.x;
@@ -701,17 +701,14 @@ class _GameScreenState extends State<GameScreen> {
               }
             }
           } else if (orb.type == 3) {
-            final destroyed = _enemies.where((enemy) => enemy.hp > 0).length;
-            _kills += destroyed;
-            _xp += destroyed * 5;
             for (final enemy in _enemies) {
-              enemy.hp = 0;
+              if (enemy.hp > 0) enemy.hp *= .5;
             }
           } else {
             _xp += orb.type == 0 ? 3 : 0;
           }
           if (orb.type == 1) {
-            _hp = math.min(_maxHp(), _hp + (_maxHp() / 3).round());
+            _hp = math.min(_maxHp(), _hp + (_maxHp() / 4).round());
           }
           orb.x = -1;
         }
