@@ -127,7 +127,7 @@ class _GameScreenState extends State<GameScreen> {
       Orb(
         x,
         y,
-        roll < .01
+        roll < .003
             ? 2
             : roll < .035
             ? 1
