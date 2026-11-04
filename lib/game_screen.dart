@@ -53,7 +53,7 @@ class _GameScreenState extends State<GameScreen> {
   int _xpToLevel() => 52 + _level * 25;
 
   double _enemyHealth() =>
-      52 + math.max(0, _level - 1) * 10 + _elapsed / 60 * 8;
+      18 + math.max(0, _level - 1) * 10 + _elapsed / 60 * 8;
 
   Enemy _newEnemy(double x, double y, EnemyType type) {
     final angle = math.atan2(.5 - y, .5 - x) + (_random.nextDouble() - .5) * .9;
