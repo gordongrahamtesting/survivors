@@ -21,6 +21,18 @@ class _GameScreenState extends State<GameScreen> {
   final _keys = <LogicalKeyboardKey>{};
   final _focus = FocusNode();
   final _enemies = <Enemy>[];
+  final _benches = const <ParkBench>[
+    ParkBench(-.55, -.34, .24, .08),
+    ParkBench(.48, -.46, .08, .25),
+    ParkBench(-.8, .48, .25, .08),
+    ParkBench(.72, .62, .08, .25),
+    ParkBench(-1.35, -.8, .3, .09),
+    ParkBench(1.28, -.9, .09, .3),
+    ParkBench(-1.4, 1.05, .3, .09),
+    ParkBench(1.35, 1.12, .09, .3),
+    ParkBench(2.05, .05, .28, .09),
+    ParkBench(-2.05, -.05, .28, .09),
+  ];
   final _orbs = <Orb>[];
   final _shots = <Shot>[];
   Timer? _timer;
@@ -53,12 +65,10 @@ class _GameScreenState extends State<GameScreen> {
   int _xpToLevel() => 52 + _level * 25;
 
   double _enemyHealth() =>
-      18 +
-      math.max(0, _level - 4) * 10 +
-      math.max(0, _elapsed - 90) / 60 * 8;
+      18 + math.max(0, _level - 4) * 10 + math.max(0, _elapsed - 90) / 60 * 8;
 
   Enemy _newEnemy(double x, double y, EnemyType type) {
-    final angle = math.atan2(.5 - y, .5 - x) + (_random.nextDouble() - .5) * .9;
+    final angle = math.atan2(-y, -x) + (_random.nextDouble() - .5) * .9;
     final trajectoryOnly = _random.nextDouble() < .58;
     return Enemy(
       x,
@@ -71,6 +81,25 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  bool _blocked(double x, double y, [double radius = .035]) {
+    for (final bench in _benches) {
+      if ((x - bench.x).abs() < bench.width / 2 + radius &&
+          (y - bench.y).abs() < bench.height / 2 + radius) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _movePlayer(double dx, double dy) {
+    final nextX = _px + dx;
+    final nextY = _py + dy;
+    if (!_blocked(nextX, _py)) _px = nextX;
+    if (!_blocked(_px, nextY)) _py = nextY;
+    _px = _px.clamp(-4.5, 4.5);
+    _py = _py.clamp(-4.5, 4.5);
+  }
+
   int _scaledDamage(int baseDamage) =>
       (baseDamage * (1 + math.max(0, _level - 1) * .015)).round();
 
@@ -81,11 +110,7 @@ class _GameScreenState extends State<GameScreen> {
       final a = _random.nextDouble() * math.pi * 2;
       final r = .18 + _random.nextDouble() * .34;
       _enemies.add(
-        _newEnemy(
-          .5 + math.cos(a) * r,
-          .5 + math.sin(a) * r,
-          EnemyType.values[i % 4],
-        ),
+        _newEnemy(math.cos(a) * r, math.sin(a) * r, EnemyType.values[i % 4]),
       );
     }
     _timer = Timer.periodic(const Duration(milliseconds: 32), (_) => _tick());
@@ -136,22 +161,20 @@ class _GameScreenState extends State<GameScreen> {
       final speed = .0065 + slipperRank * .0007;
       if (_keys.contains(LogicalKeyboardKey.keyW) ||
           _keys.contains(LogicalKeyboardKey.arrowUp)) {
-        _py -= speed;
+        _movePlayer(0, -speed);
       }
       if (_keys.contains(LogicalKeyboardKey.keyS) ||
           _keys.contains(LogicalKeyboardKey.arrowDown)) {
-        _py += speed;
+        _movePlayer(0, speed);
       }
       if (_keys.contains(LogicalKeyboardKey.keyA) ||
           _keys.contains(LogicalKeyboardKey.arrowLeft)) {
-        _px -= speed;
+        _movePlayer(-speed, 0);
       }
       if (_keys.contains(LogicalKeyboardKey.keyD) ||
           _keys.contains(LogicalKeyboardKey.arrowRight)) {
-        _px += speed;
+        _movePlayer(speed, 0);
       }
-      _px = _px.clamp(.08, .92);
-      _py = _py.clamp(.12, .9);
 
       final difficultyLevel = math.max(0, _level - 1);
       final spawnInterval = math.max(
@@ -167,16 +190,9 @@ class _GameScreenState extends State<GameScreen> {
         );
         for (var spawn = 0; spawn < spawns; spawn++) {
           final edge = _random.nextInt(4);
-          final x = edge == 0
-              ? .03
-              : edge == 1
-              ? .97
-              : _random.nextDouble();
-          final y = edge == 2
-              ? .12
-              : edge == 3
-              ? .9
-              : .12 + _random.nextDouble() * .78;
+          final distance = 1.0 + _random.nextDouble() * .25;
+          final x = _px + (edge < 2 ? (edge == 0 ? -distance : distance) : 0);
+          final y = _py + (edge >= 2 ? (edge == 2 ? -distance : distance) : 0);
           _enemies.add(_newEnemy(x, y, EnemyType.values[_random.nextInt(4)]));
         }
       }
@@ -190,16 +206,20 @@ class _GameScreenState extends State<GameScreen> {
         final d = math.sqrt(dx * dx + dy * dy);
         if (d > playerContactRadius) {
           final enemySpeed = .00145 + difficultyLevel * .00008;
+          var nextX = enemy.x;
+          var nextY = enemy.y;
           if (enemy.trajectoryOnly && d > .28) {
-            enemy.x += enemy.vx * enemySpeed;
-            enemy.y += enemy.vy * enemySpeed;
+            nextX += enemy.vx * enemySpeed;
+            nextY += enemy.vy * enemySpeed;
           } else {
             enemy.trajectoryOnly = false;
-            enemy.x += dx / d * enemySpeed;
-            enemy.y += dy / d * enemySpeed;
+            nextX += dx / d * enemySpeed;
+            nextY += dy / d * enemySpeed;
           }
-          enemy.x = enemy.x.clamp(.02, .98);
-          enemy.y = enemy.y.clamp(.1, .95);
+          if (!_blocked(nextX, nextY, .025)) {
+            enemy.x = nextX;
+            enemy.y = nextY;
+          }
         } else if (enemy.contactCooldown == 0) {
           final contactDamage = math.max(
             1,
@@ -436,8 +456,12 @@ class _GameScreenState extends State<GameScreen> {
                 .001,
                 math.sqrt(pushX * pushX + pushY * pushY),
               );
-              enemy.x = (enemy.x + pushX / pushDistance * .12).clamp(.04, .96);
-              enemy.y = (enemy.y + pushY / pushDistance * .12).clamp(.12, .94);
+              final pushedX = enemy.x + pushX / pushDistance * .12;
+              final pushedY = enemy.y + pushY / pushDistance * .12;
+              if (!_blocked(pushedX, pushedY, .025)) {
+                enemy.x = pushedX;
+                enemy.y = pushedY;
+              }
               enemy.stunned = 1.8;
               enemy.hp -= damage;
             } else {
@@ -467,7 +491,10 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       _shots.removeWhere(
-        (s) => s.life <= 0 || s.x < 0 || s.x > 1 || s.y < .1 || s.y > 1,
+        (s) =>
+            s.life <= 0 ||
+            math.sqrt((s.x - _px) * (s.x - _px) + (s.y - _py) * (s.y - _py)) >
+                2.5,
       );
       _enemies.removeWhere((e) => e.hp <= 0);
       for (final orb in _orbs) {
@@ -577,11 +604,7 @@ class _GameScreenState extends State<GameScreen> {
         final a = _random.nextDouble() * math.pi * 2;
         final r = .18 + _random.nextDouble() * .34;
         _enemies.add(
-          _newEnemy(
-            .5 + math.cos(a) * r,
-            .5 + math.sin(a) * r,
-            EnemyType.values[i % 4],
-          ),
+          _newEnemy(math.cos(a) * r, math.sin(a) * r, EnemyType.values[i % 4]),
         );
       }
     });
@@ -629,6 +652,7 @@ class _GameScreenState extends State<GameScreen> {
                         _teaSplashX,
                         _teaSplashY,
                         _weapon,
+                        _benches,
                       ),
                       size: Size(constraints.maxWidth, constraints.maxHeight),
                     ),

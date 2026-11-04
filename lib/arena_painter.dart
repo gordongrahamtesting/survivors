@@ -24,6 +24,7 @@ class ArenaPainter extends CustomPainter {
     this.teaSplashX,
     this.teaSplashY,
     this.weapon,
+    this.benches,
   );
   final double px, py;
   final List<Enemy> enemies;
@@ -41,25 +42,71 @@ class ArenaPainter extends CustomPainter {
   final double teaSplashX;
   final double teaSplashY;
   final String weapon;
+  final List<ParkBench> benches;
   @override
   void paint(Canvas canvas, Size size) {
-    final bg = Paint()..color = const Color(0xff182229);
+    final bg = Paint()..color = const Color(0xff6fa05b);
     canvas.drawRect(Offset.zero & size, bg);
     final area = Rect.fromLTWH(0, 76, size.width, size.height - 76);
-    final grid = Paint()
-      ..color = const Color(0xff25343a)
-      ..strokeWidth = 1;
-    for (var x = 0.0; x < size.width; x += 42) {
-      canvas.drawLine(Offset(x, 76), Offset(x, size.height), grid);
-    }
-    for (var y = 76.0; y < size.height; y += 42) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
-    }
-    Offset at(double x, double y) => Offset(size.width * x, size.height * y);
+    final worldScale = math.min(size.width, size.height - 76);
+    final worldCenter = Offset(size.width / 2, 76 + (size.height - 76) / 2);
+    Offset at(double x, double y) => Offset(
+      worldCenter.dx + (x - px) * worldScale,
+      worldCenter.dy + (y - py) * worldScale,
+    );
     canvas.drawRect(
       area,
-      Paint()..color = const Color(0xff1a282f).withValues(alpha: .32),
+      Paint()..color = const Color(0xff7cac63).withValues(alpha: .35),
     );
+    final pathPaint = Paint()
+      ..color = const Color(0xffb8a879).withValues(alpha: .4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = worldScale * .22;
+    canvas.drawLine(at(-5, 0), at(5, 0), pathPaint);
+    canvas.drawLine(at(0, -5), at(0, 5), pathPaint);
+    final grass = Paint()
+      ..color = const Color(0xff4f8049).withValues(alpha: .3);
+    for (var x = -6.0; x <= 6; x += .25) {
+      for (var y = -6.0; y <= 6; y += .25) {
+        final p = at(x, y);
+        if (p.dx > 0 && p.dx < size.width && p.dy > 76 && p.dy < size.height) {
+          canvas.drawCircle(p, 1.2, grass);
+        }
+      }
+    }
+    for (final bench in benches) {
+      final center = at(bench.x, bench.y);
+      final rect = Rect.fromCenter(
+        center: center,
+        width: bench.width * worldScale,
+        height: bench.height * worldScale,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, const Radius.circular(5)),
+        Paint()..color = const Color(0xff754f36),
+      );
+      final seat = rect.deflate(4);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(seat, const Radius.circular(3)),
+        Paint()..color = const Color(0xffb77b4e),
+      );
+      final back = Paint()
+        ..color = const Color(0xff563b2c)
+        ..strokeWidth = 4;
+      if (bench.width > bench.height) {
+        canvas.drawLine(
+          Offset(rect.left, rect.center.dy - 5),
+          Offset(rect.right, rect.center.dy - 5),
+          back,
+        );
+      } else {
+        canvas.drawLine(
+          Offset(rect.center.dx - 5, rect.top),
+          Offset(rect.center.dx - 5, rect.bottom),
+          back,
+        );
+      }
+    }
     for (final orb in orbs) {
       final p = at(orb.x, orb.y);
       if (orb.type == 1) {
@@ -332,12 +379,12 @@ class ArenaPainter extends CustomPainter {
       final p = at(e.x, e.y);
       final stunned = e.stunned > 0;
       final color = e.type == EnemyType.scooterTeen
-          ? const Color(0xffd08b52) // e-scooter teen
+          ? const Color(0xffd08b52)
           : e.type == EnemyType.vapeTeen
-          ? const Color(0xff84aa86) // vape cloud teen
+          ? const Color(0xff84aa86)
           : e.type == EnemyType.goth
-          ? const Color(0xff77768c) // goth
-          : const Color(0xffb86a65); // hoodie kid
+          ? const Color(0xff536b80)
+          : const Color(0xffb86a65);
       canvas.drawCircle(
         p,
         stunned ? 20 : 16,
@@ -448,15 +495,9 @@ class ArenaPainter extends CustomPainter {
       canvas.drawCircle(
         p + const Offset(0, -6),
         9,
-        Paint()
-          ..color = e.type == EnemyType.goth
-              ? const Color(0xff24232d)
-              : const Color(0xffd99d72),
+        Paint()..color = const Color(0xffd99d72),
       );
-      final face = Paint()
-        ..color = e.type == EnemyType.goth
-            ? const Color(0xff16161c)
-            : Colors.white70;
+      final face = Paint()..color = Colors.white70;
       canvas.drawCircle(p + const Offset(-3, -2), 2, face);
       canvas.drawCircle(p + const Offset(3, -2), 2, face);
       if (stunned) {
@@ -483,7 +524,7 @@ class ArenaPainter extends CustomPainter {
       }
       if (e.type == EnemyType.scooterTeen) {
         final wheel = Paint()
-          ..color = const Color(0xff2e3439)
+          ..color = const Color(0xff24313b)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2;
         canvas.drawCircle(p + const Offset(-11, 18), 4, wheel);
@@ -499,12 +540,30 @@ class ArenaPainter extends CustomPainter {
           wheel,
         );
         canvas.drawLine(p + const Offset(5, 5), p + const Offset(13, 5), wheel);
+        canvas.drawLine(
+          p + const Offset(-13, 13),
+          p + const Offset(13, 13),
+          Paint()
+            ..color = const Color(0xff59d0dc)
+            ..strokeWidth = 3,
+        );
       } else if (e.type == EnemyType.vapeTeen) {
         final cloud = Paint()
           ..color = const Color(0xffc7d7c2).withValues(alpha: .65);
         canvas.drawCircle(p + const Offset(12, -12), 4, cloud);
         canvas.drawCircle(p + const Offset(17, -17), 3, cloud);
         canvas.drawCircle(p + const Offset(20, -22), 2, cloud);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: p + const Offset(13, 8),
+              width: 4,
+              height: 12,
+            ),
+            const Radius.circular(2),
+          ),
+          Paint()..color = const Color(0xffd7e3e1),
+        );
       } else if (e.type == EnemyType.goth) {
         final hair = Paint()..color = const Color(0xff20212a);
         final spikes = Path()
@@ -517,6 +576,13 @@ class ArenaPainter extends CustomPainter {
           ..lineTo(p.dx + 12, p.dy - 3)
           ..close();
         canvas.drawPath(spikes, hair);
+        canvas.drawLine(
+          p + const Offset(-11, 6),
+          p + const Offset(11, 6),
+          Paint()
+            ..color = const Color(0xffd05c9d)
+            ..strokeWidth = 2,
+        );
       } else {
         final hood = Paint()
           ..color = const Color(0xff8e454e).withValues(alpha: .9);

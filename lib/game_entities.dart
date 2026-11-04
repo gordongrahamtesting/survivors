@@ -25,6 +25,14 @@ class Enemy {
   double contactCooldown = 0;
 }
 
+class ParkBench {
+  const ParkBench(this.x, this.y, this.width, this.height);
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+}
+
 class Orb {
   Orb(this.x, this.y, this.type);
   double x;
