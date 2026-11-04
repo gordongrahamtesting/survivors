@@ -62,7 +62,7 @@ class ArenaPainter extends CustomPainter {
     final bg = Paint()..color = const Color(0xff6fa05b);
     canvas.drawRect(Offset.zero & size, bg);
     final area = Rect.fromLTWH(0, 76, size.width, size.height - 76);
-    final worldScale = math.min(size.width, size.height - 76);
+    final worldScale = math.min(size.width, size.height - 76) * .82;
     final worldCenter = Offset(size.width / 2, 76 + (size.height - 76) / 2);
     Offset at(double x, double y) => Offset(
       worldCenter.dx + (x - px) * worldScale,
@@ -98,7 +98,7 @@ class ArenaPainter extends CustomPainter {
     }
     for (final tree in trees) {
       final p = at(tree.x, tree.y);
-      final radius = tree.size * worldScale * .22;
+      final radius = tree.size * worldScale * .17;
       canvas.drawCircle(
         p + Offset(5, radius * .7),
         radius * 1.15,

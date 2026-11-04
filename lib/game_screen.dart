@@ -22,16 +22,16 @@ class _GameScreenState extends State<GameScreen> {
   final _focus = FocusNode();
   final _enemies = <Enemy>[];
   final _benches = const <ParkBench>[
-    ParkBench(-1.55, -2.38, .28, .08),
-    ParkBench(.85, -2.38, .28, .08),
-    ParkBench(2.65, -2.38, .28, .08),
-    ParkBench(-3.52, -.37, .28, .08),
-    ParkBench(-1.55, -.37, .28, .08),
-    ParkBench(2.65, -.37, .28, .08),
-    ParkBench(3.52, .71, .28, .08),
-    ParkBench(-3.52, 2.11, .28, .08),
-    ParkBench(.85, 2.11, .28, .08),
-    ParkBench(2.65, 2.11, .28, .08),
+    ParkBench(-1.55, -2.46, .28, .08),
+    ParkBench(.85, -2.46, .28, .08),
+    ParkBench(2.65, -2.46, .28, .08),
+    ParkBench(-3.52, -.28, .28, .08),
+    ParkBench(-1.55, -.28, .28, .08),
+    ParkBench(2.65, -.28, .28, .08),
+    ParkBench(3.52, .78, .28, .08),
+    ParkBench(-3.52, 2.2, .28, .08),
+    ParkBench(.85, 2.2, .28, .08),
+    ParkBench(2.65, 2.2, .28, .08),
   ];
   final _paths = const <ParkPath>[
     ParkPath(-2.65, 0, .2, 5.8),
@@ -55,19 +55,19 @@ class _GameScreenState extends State<GameScreen> {
     PicnicTable(-3.52, 1.05, math.pi / 2),
   ];
   final _trees = const <ParkTree>[
-    ParkTree(-3.55, -1.65, .9),
-    ParkTree(-1.55, -1.55, .75),
-    ParkTree(.85, -1.55, .9),
-    ParkTree(2.65, -1.55, .8),
-    ParkTree(3.55, -1.35, .85),
-    ParkTree(-3.55, .85, .95),
-    ParkTree(-1.55, .85, .8),
-    ParkTree(.85, .85, .9),
-    ParkTree(2.65, .85, .8),
-    ParkTree(3.55, .85, .85),
-    ParkTree(-3.55, 2.45, .8),
-    ParkTree(-.85, 2.35, .9),
-    ParkTree(1.55, 2.35, .8),
+    ParkTree(-3.55, -1.65, .65),
+    ParkTree(-1.55, -1.55, .55),
+    ParkTree(.85, -1.55, .65),
+    ParkTree(2.65, -1.55, .6),
+    ParkTree(4.15, -1.35, .6),
+    ParkTree(-3.55, .85, .7),
+    ParkTree(-1.55, .85, .6),
+    ParkTree(.85, .85, .65),
+    ParkTree(2.65, .85, .6),
+    ParkTree(4.15, .85, .65),
+    ParkTree(-3.55, 2.45, .6),
+    ParkTree(-.85, 2.35, .65),
+    ParkTree(1.55, 2.35, .6),
   ];
   final _hedges = const <ParkHedge>[
     ParkHedge(-2.2, -.95, .48, .1),
@@ -203,6 +203,14 @@ class _GameScreenState extends State<GameScreen> {
     for (final hedge in _hedges) {
       if ((x - hedge.x).abs() < hedge.width / 2 + radius &&
           (y - hedge.y).abs() < hedge.height / 2 + radius) {
+        return true;
+      }
+    }
+    for (final tree in _trees) {
+      final treeRadius = tree.size * .17;
+      final dx = x - tree.x;
+      final dy = y - tree.y;
+      if (dx * dx + dy * dy < (treeRadius + radius) * (treeRadius + radius)) {
         return true;
       }
     }
