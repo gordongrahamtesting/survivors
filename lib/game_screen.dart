@@ -33,11 +33,31 @@ class _GameScreenState extends State<GameScreen> {
     ParkBench(2.05, .05, .28, .09),
     ParkBench(-2.05, -.05, .28, .09),
   ];
+  final _trees = const <ParkTree>[
+    ParkTree(-1.9, -1.35, .9),
+    ParkTree(1.75, -1.55, .75),
+    ParkTree(-2.1, 1.65, 1.0),
+    ParkTree(1.9, 1.7, .85),
+    ParkTree(-3.2, .2, .8),
+    ParkTree(3.1, -.4, .9),
+  ];
+  final _lampPosts = const <LampPost>[
+    LampPost(-1.05, -.95),
+    LampPost(1.05, -.95),
+    LampPost(-1.05, .95),
+    LampPost(1.05, .95),
+  ];
+  final _pigeons = <Pigeon>[
+    Pigeon(-.35, .12),
+    Pigeon(.35, .18),
+    Pigeon(.1, -.2),
+    Pigeon(-.15, -.28),
+  ];
   final _orbs = <Orb>[];
   final _shots = <Shot>[];
   Timer? _timer;
-  double _px = .5,
-      _py = .5,
+  double _px = 0,
+      _py = 0,
       _elapsed = 0,
       _spawnClock = 0,
       _swingTimer = 0,
@@ -49,6 +69,7 @@ class _GameScreenState extends State<GameScreen> {
       _teaSplashTimer = 0,
       _teaSplashX = 0,
       _teaSplashY = 0;
+  double _walkTime = 0;
   int _xp = 0, _level = 1, _kills = 0, _hp = 86;
   bool _paused = false, _levelUp = false, _gameOver = false, _won = false;
   final _upgradeChoices = <String>[];
@@ -96,8 +117,34 @@ class _GameScreenState extends State<GameScreen> {
     final nextY = _py + dy;
     if (!_blocked(nextX, _py)) _px = nextX;
     if (!_blocked(_px, nextY)) _py = nextY;
+    if (dx != 0 || dy != 0) _walkTime += .22;
     _px = _px.clamp(-4.5, 4.5);
     _py = _py.clamp(-4.5, 4.5);
+  }
+
+  void _updatePigeons() {
+    for (final pigeon in _pigeons) {
+      final dx = pigeon.x - _px;
+      final dy = pigeon.y - _py;
+      final distance = math.sqrt(dx * dx + dy * dy);
+      if (distance < .28 && pigeon.startled == 0) {
+        pigeon.startled = 1.8;
+        final safeDistance = math.max(.001, distance);
+        pigeon.vx = dx / safeDistance * .012;
+        pigeon.vy = dy / safeDistance * .012;
+      }
+      if (pigeon.startled > 0) {
+        pigeon.startled = math.max(0, pigeon.startled - .032);
+        pigeon.x += pigeon.vx;
+        pigeon.y += pigeon.vy;
+        pigeon.vx *= .994;
+        pigeon.vy *= .994;
+        if (pigeon.startled == 0) {
+          pigeon.x = pigeon.x.clamp(-2.4, 2.4);
+          pigeon.y = pigeon.y.clamp(-2.4, 2.4);
+        }
+      }
+    }
   }
 
   int _scaledDamage(int baseDamage) =>
@@ -136,6 +183,7 @@ class _GameScreenState extends State<GameScreen> {
       _hitTimer = math.max(0, _hitTimer - .032);
       _teaSplashTimer = math.max(0, _teaSplashTimer - .032);
       _trolleyAngle = (_trolleyAngle + .025) % (math.pi * 2);
+      _updatePigeons();
       if (_ownedWeapons.contains('Canvas Trolleys')) {
         if (_trolleyActive > 0) {
           _trolleyActive = math.max(0, _trolleyActive - .032);
@@ -215,6 +263,27 @@ class _GameScreenState extends State<GameScreen> {
             enemy.trajectoryOnly = false;
             nextX += dx / d * enemySpeed;
             nextY += dy / d * enemySpeed;
+          }
+          if (_blocked(nextX, nextY, .025)) {
+            final options = [
+              math.Point(nextX + enemySpeed, nextY),
+              math.Point(nextX - enemySpeed, nextY),
+              math.Point(nextX, nextY + enemySpeed),
+              math.Point(nextX, nextY - enemySpeed),
+            ].where((point) => !_blocked(point.x, point.y, .025)).toList();
+            options.sort(
+              (a, b) => math
+                  .sqrt((a.x - _px) * (a.x - _px) + (a.y - _py) * (a.y - _py))
+                  .compareTo(
+                    math.sqrt(
+                      (b.x - _px) * (b.x - _px) + (b.y - _py) * (b.y - _py),
+                    ),
+                  ),
+            );
+            if (options.isNotEmpty) {
+              nextX = options.first.x;
+              nextY = options.first.y;
+            }
           }
           if (!_blocked(nextX, nextY, .025)) {
             enemy.x = nextX;
@@ -564,8 +633,8 @@ class _GameScreenState extends State<GameScreen> {
 
   void _restartGame() {
     setState(() {
-      _px = .5;
-      _py = .5;
+      _px = 0;
+      _py = 0;
       _elapsed = 0;
       _spawnClock = 0;
       _swingTimer = 0;
@@ -653,6 +722,10 @@ class _GameScreenState extends State<GameScreen> {
                         _teaSplashY,
                         _weapon,
                         _benches,
+                        _trees,
+                        _lampPosts,
+                        _pigeons,
+                        _walkTime,
                       ),
                       size: Size(constraints.maxWidth, constraints.maxHeight),
                     ),

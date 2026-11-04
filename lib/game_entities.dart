@@ -33,6 +33,28 @@ class ParkBench {
   final double height;
 }
 
+class ParkTree {
+  const ParkTree(this.x, this.y, this.size);
+  final double x;
+  final double y;
+  final double size;
+}
+
+class LampPost {
+  const LampPost(this.x, this.y);
+  final double x;
+  final double y;
+}
+
+class Pigeon {
+  Pigeon(this.x, this.y);
+  double x;
+  double y;
+  double vx = 0;
+  double vy = 0;
+  double startled = 0;
+}
+
 class Orb {
   Orb(this.x, this.y, this.type);
   double x;

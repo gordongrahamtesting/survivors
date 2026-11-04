@@ -25,6 +25,10 @@ class ArenaPainter extends CustomPainter {
     this.teaSplashY,
     this.weapon,
     this.benches,
+    this.trees,
+    this.lampPosts,
+    this.pigeons,
+    this.walkTime,
   );
   final double px, py;
   final List<Enemy> enemies;
@@ -43,6 +47,10 @@ class ArenaPainter extends CustomPainter {
   final double teaSplashY;
   final String weapon;
   final List<ParkBench> benches;
+  final List<ParkTree> trees;
+  final List<LampPost> lampPosts;
+  final List<Pigeon> pigeons;
+  final double walkTime;
   @override
   void paint(Canvas canvas, Size size) {
     final bg = Paint()..color = const Color(0xff6fa05b);
@@ -58,6 +66,8 @@ class ArenaPainter extends CustomPainter {
       area,
       Paint()..color = const Color(0xff7cac63).withValues(alpha: .35),
     );
+    canvas.save();
+    canvas.clipRect(area);
     final pathPaint = Paint()
       ..color = const Color(0xffb8a879).withValues(alpha: .4)
       ..style = PaintingStyle.stroke
@@ -72,6 +82,78 @@ class ArenaPainter extends CustomPainter {
         if (p.dx > 0 && p.dx < size.width && p.dy > 76 && p.dy < size.height) {
           canvas.drawCircle(p, 1.2, grass);
         }
+      }
+      for (final tree in trees) {
+        final p = at(tree.x, tree.y);
+        final radius = tree.size * worldScale * .22;
+        canvas.drawCircle(
+          p + Offset(5, radius * .7),
+          radius * 1.15,
+          Paint()..color = const Color(0xff385f3b).withValues(alpha: .35),
+        );
+        canvas.drawRect(
+          Rect.fromCenter(
+            center: p + Offset(0, radius * .65),
+            width: radius * .25,
+            height: radius * 1.25,
+          ),
+          Paint()..color = const Color(0xff765039),
+        );
+        canvas.drawCircle(p, radius, Paint()..color = const Color(0xff2f713d));
+        canvas.drawCircle(
+          p + Offset(-radius * .55, radius * .12),
+          radius * .7,
+          Paint()..color = const Color(0xff3f8448),
+        );
+        canvas.drawCircle(
+          p + Offset(radius * .52, radius * .08),
+          radius * .65,
+          Paint()..color = const Color(0xff4a914c),
+        );
+      }
+      for (final lamp in lampPosts) {
+        final p = at(lamp.x, lamp.y);
+        final post = Paint()
+          ..color = const Color(0xff424b4d)
+          ..strokeWidth = 4;
+        canvas.drawLine(
+          p + const Offset(0, 18),
+          p + const Offset(0, -28),
+          post,
+        );
+        canvas.drawLine(
+          p + const Offset(-8, -28),
+          p + const Offset(8, -28),
+          post,
+        );
+        canvas.drawCircle(
+          p + const Offset(0, -30),
+          7,
+          Paint()..color = const Color(0xffffe19a).withValues(alpha: .8),
+        );
+      }
+      for (final pigeon in pigeons) {
+        final p = at(pigeon.x, pigeon.y);
+        final wing = pigeon.startled > 0
+            ? math.sin(pigeon.startled * 18).abs() * 5
+            : 0.0;
+        final bird = Paint()..color = const Color(0xffd9dedb);
+        canvas.drawOval(Rect.fromCenter(center: p, width: 14, height: 9), bird);
+        canvas.drawCircle(p + const Offset(7, -2), 3, bird);
+        canvas.drawLine(
+          p + Offset(-3, -2 - wing),
+          p + Offset(-9, -8 - wing),
+          Paint()
+            ..color = const Color(0xff8a9693)
+            ..strokeWidth = 3,
+        );
+        canvas.drawLine(
+          p + Offset(0, -2 + wing),
+          p + Offset(6, -8 + wing),
+          Paint()
+            ..color = const Color(0xff8a9693)
+            ..strokeWidth = 3,
+        );
       }
     }
     for (final bench in benches) {
@@ -154,12 +236,26 @@ class ArenaPainter extends CustomPainter {
             ..strokeWidth = 1,
         );
       } else {
-        final xpPaint = Paint()..color = const Color(0xff82c6c6);
-        canvas.drawCircle(p, 5, xpPaint);
+        final xpPaint = Paint()..color = const Color(0xffa8ffff);
+        canvas.drawCircle(p, 8, xpPaint);
         canvas.drawCircle(
           p,
-          9,
+          18,
           Paint()..color = xpPaint.color.withValues(alpha: .16),
+        );
+        canvas.drawLine(
+          p + const Offset(-6, 0),
+          p + const Offset(6, 0),
+          Paint()
+            ..color = Colors.white.withValues(alpha: .8)
+            ..strokeWidth = 2,
+        );
+        canvas.drawLine(
+          p + const Offset(0, -6),
+          p + const Offset(0, 6),
+          Paint()
+            ..color = Colors.white.withValues(alpha: .8)
+            ..strokeWidth = 2,
         );
       }
     }
@@ -765,16 +861,17 @@ class ArenaPainter extends CustomPainter {
       ),
       Paint()..color = const Color(0xffb98d68),
     );
+    final stride = math.sin(walkTime) * 4;
     canvas.drawLine(
-      g + const Offset(-8, 20),
-      g + const Offset(-11, 28),
+      g + Offset(-8, 20 + stride),
+      g + Offset(-11, 28 + stride),
       Paint()
         ..color = const Color(0xff292b30)
         ..strokeWidth = 5,
     );
     canvas.drawLine(
-      g + const Offset(8, 20),
-      g + const Offset(11, 28),
+      g + Offset(8, 20 - stride),
+      g + Offset(11, 28 - stride),
       Paint()
         ..color = const Color(0xff292b30)
         ..strokeWidth = 5,
@@ -819,7 +916,7 @@ class ArenaPainter extends CustomPainter {
     canvas.save();
     canvas.translate(g.dx, g.dy);
     canvas.rotate(caneAngle);
-    canvas.drawLine(const Offset(14, 3), const Offset(27, 24), cane);
+    canvas.drawLine(Offset(14, 3 - stride), Offset(27, 24 - stride), cane);
     canvas.drawArc(
       Rect.fromCircle(center: const Offset(12, 0), radius: 6),
       -.3,
@@ -869,6 +966,7 @@ class ArenaPainter extends CustomPainter {
         ..strokeWidth = 2
         ..color = Colors.white.withValues(alpha: .08),
     );
+    canvas.restore();
   }
 
   @override
