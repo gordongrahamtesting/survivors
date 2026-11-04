@@ -525,7 +525,7 @@ class UpgradeOverlay extends StatelessWidget {
       color: const Color(0xff0c1015).withValues(alpha: .86),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 840),
+          constraints: const BoxConstraints(maxWidth: 1020),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -575,12 +575,12 @@ class _Card extends StatelessWidget {
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 180,
+    width: 210,
     child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        height: 142,
+        height: 182,
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
           color: const Color(0xff18212a),
@@ -601,8 +601,7 @@ class _Card extends StatelessWidget {
             const SizedBox(height: 5),
             Text(
               copy,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              maxLines: 4,
               style: const TextStyle(
                 fontSize: 11,
                 color: Colors.white60,

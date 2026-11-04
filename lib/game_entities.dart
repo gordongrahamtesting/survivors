@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
+
 import 'enemy_types.dart';
 
 class Enemy {
-  Enemy(this.x, this.y, this.type, this.maxHp);
+  Enemy(
+    this.x,
+    this.y,
+    this.type,
+    this.maxHp, {
+    this.vx = 0,
+    this.vy = 0,
+    this.trajectoryOnly = false,
+  });
   double x;
   double y;
   final EnemyType type;
   final double maxHp;
+  double vx;
+  double vy;
+  bool trajectoryOnly;
   late double hp = maxHp;
   double stunned = 0;
   double teaDamageCooldown = 0;

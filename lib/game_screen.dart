@@ -50,9 +50,24 @@ class _GameScreenState extends State<GameScreen> {
 
   int _maxHp() => 86 + (_weaponLevels['Lucky Sweater'] ?? 0) * 8;
 
-  int _xpToLevel() => 70 + _level * 35;
+  int _xpToLevel() => 52 + _level * 25;
 
-  double _enemyHealth() => 38 + math.max(0, _level - 1) * 8 + _elapsed / 60 * 6;
+  double _enemyHealth() =>
+      52 + math.max(0, _level - 1) * 10 + _elapsed / 60 * 8;
+
+  Enemy _newEnemy(double x, double y, EnemyType type) {
+    final angle = math.atan2(.5 - y, .5 - x) + (_random.nextDouble() - .5) * .9;
+    final trajectoryOnly = _random.nextDouble() < .58;
+    return Enemy(
+      x,
+      y,
+      type,
+      _enemyHealth(),
+      vx: math.cos(angle),
+      vy: math.sin(angle),
+      trajectoryOnly: trajectoryOnly,
+    );
+  }
 
   int _scaledDamage(int baseDamage) =>
       (baseDamage * (1 + math.max(0, _level - 1) * .015)).round();
@@ -64,11 +79,10 @@ class _GameScreenState extends State<GameScreen> {
       final a = _random.nextDouble() * math.pi * 2;
       final r = .18 + _random.nextDouble() * .34;
       _enemies.add(
-        Enemy(
+        _newEnemy(
           .5 + math.cos(a) * r,
           .5 + math.sin(a) * r,
           EnemyType.values[i % 4],
-          _enemyHealth(),
         ),
       );
     }
@@ -139,14 +153,14 @@ class _GameScreenState extends State<GameScreen> {
 
       final difficultyLevel = math.max(0, _level - 1);
       final spawnInterval = math.max(
-        .45,
-        1.5 - _elapsed / 100 - difficultyLevel * .06,
+        .38,
+        1.15 - _elapsed / 100 - difficultyLevel * .05,
       );
       if (_spawnClock > spawnInterval) {
         _spawnClock = 0;
-        final maxEnemies = 15 + math.max(0, _level - 5) * 4;
+        final maxEnemies = 22 + difficultyLevel * 3;
         final spawns = math.min(
-          1 + difficultyLevel ~/ 4,
+          1 + difficultyLevel ~/ 3,
           maxEnemies - _enemies.length,
         );
         for (var spawn = 0; spawn < spawns; spawn++) {
@@ -161,9 +175,7 @@ class _GameScreenState extends State<GameScreen> {
               : edge == 3
               ? .9
               : .12 + _random.nextDouble() * .78;
-          _enemies.add(
-            Enemy(x, y, EnemyType.values[_random.nextInt(4)], _enemyHealth()),
-          );
+          _enemies.add(_newEnemy(x, y, EnemyType.values[_random.nextInt(4)]));
         }
       }
       const playerContactRadius = .045;
@@ -175,9 +187,17 @@ class _GameScreenState extends State<GameScreen> {
         final dx = _px - enemy.x, dy = _py - enemy.y;
         final d = math.sqrt(dx * dx + dy * dy);
         if (d > playerContactRadius) {
-          final enemySpeed = .0013 + difficultyLevel * .00008;
-          enemy.x += dx / d * enemySpeed;
-          enemy.y += dy / d * enemySpeed;
+          final enemySpeed = .00145 + difficultyLevel * .00008;
+          if (enemy.trajectoryOnly && d > .28) {
+            enemy.x += enemy.vx * enemySpeed;
+            enemy.y += enemy.vy * enemySpeed;
+          } else {
+            enemy.trajectoryOnly = false;
+            enemy.x += dx / d * enemySpeed;
+            enemy.y += dy / d * enemySpeed;
+          }
+          enemy.x = enemy.x.clamp(.02, .98);
+          enemy.y = enemy.y.clamp(.1, .95);
         } else if (enemy.contactCooldown == 0) {
           final contactDamage = math.max(
             1,
@@ -208,7 +228,7 @@ class _GameScreenState extends State<GameScreen> {
                 Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
               );
               _kills++;
-              _xp += 4;
+              _xp += 5;
             }
           }
         }
@@ -246,14 +266,20 @@ class _GameScreenState extends State<GameScreen> {
           );
         }
         final isCane = weaponDefinition.attack == WeaponAttack.cane;
+        final isHose = weaponDefinition.attack == WeaponAttack.hose;
         if (cooldown > 0) continue;
         final range = weaponDefinition.range;
-        final canFire = target != null && (!isCane || best < range);
+        final canFire = isHose || (target != null && (!isCane || best < range));
         if (canFire) {
+          final firingTarget = target;
           if (isCane) {
+            if (firingTarget == null) continue;
             final reach = weaponDefinition.range;
             _swingTimer = .22;
-            _swingAngle = math.atan2(target.y - _py, target.x - _px);
+            _swingAngle = math.atan2(
+              firingTarget.y - _py,
+              firingTarget.x - _px,
+            );
             for (final enemy in _enemies) {
               final distance = math.sqrt(
                 (enemy.x - _px) * (enemy.x - _px) +
@@ -275,22 +301,36 @@ class _GameScreenState extends State<GameScreen> {
                     Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
                   );
                   _kills++;
-                  _xp += 4;
+                  _xp += 5;
                 }
               }
             }
+          } else if (isHose) {
+            for (var direction = 0; direction < 8; direction++) {
+              final angle = -math.pi / 2 + direction * math.pi / 4;
+              _shots.add(
+                Shot(
+                  _px,
+                  _py,
+                  math.cos(angle) * weaponDefinition.projectileSpeed,
+                  math.sin(angle) * weaponDefinition.projectileSpeed,
+                  weapon,
+                ),
+              );
+            }
           } else {
-            final dx = target.x - _px,
-                dy = target.y - _py,
+            if (firingTarget == null) continue;
+            final dx = firingTarget.x - _px,
+                dy = firingTarget.y - _py,
                 d = math.sqrt(dx * dx + dy * dy);
             if (weaponDefinition.attack == WeaponAttack.tea) {
-              _teaSplashX = target.x;
-              _teaSplashY = target.y;
+              _teaSplashX = firingTarget.x;
+              _teaSplashY = firingTarget.y;
               _teaSplashTimer = 2.8;
               for (final enemy in _enemies) {
                 final splashDistance = math.sqrt(
-                  (enemy.x - target.x) * (enemy.x - target.x) +
-                      (enemy.y - target.y) * (enemy.y - target.y),
+                  (enemy.x - firingTarget.x) * (enemy.x - firingTarget.x) +
+                      (enemy.y - firingTarget.y) * (enemy.y - firingTarget.y),
                 );
                 if (splashDistance < .16 && enemy.hp > 0) {
                   enemy.hp -= _scaledDamage(35);
@@ -303,7 +343,7 @@ class _GameScreenState extends State<GameScreen> {
                       Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
                     );
                     _kills++;
-                    _xp += 4;
+                    _xp += 5;
                   }
                 }
               }
@@ -366,7 +406,7 @@ class _GameScreenState extends State<GameScreen> {
                   Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
                 );
                 _kills++;
-                _xp += 4;
+                _xp += 5;
               }
               break;
             }
@@ -418,7 +458,7 @@ class _GameScreenState extends State<GameScreen> {
                 Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
               );
               _kills++;
-              _xp += 4;
+              _xp += 5;
             }
             shot.life = 0;
           }
@@ -442,7 +482,7 @@ class _GameScreenState extends State<GameScreen> {
           distance = math.sqrt(dx * dx + dy * dy);
         }
         if (distance < .055) {
-          _xp += orb.type == 0 ? 2 : 0;
+          _xp += orb.type == 0 ? 3 : 0;
           if (orb.type == 1) _hp = math.min(_maxHp(), _hp + 14);
           orb.x = -1;
         }
@@ -535,11 +575,10 @@ class _GameScreenState extends State<GameScreen> {
         final a = _random.nextDouble() * math.pi * 2;
         final r = .18 + _random.nextDouble() * .34;
         _enemies.add(
-          Enemy(
+          _newEnemy(
             .5 + math.cos(a) * r,
             .5 + math.sin(a) * r,
             EnemyType.values[i % 4],
-            _enemyHealth(),
           ),
         );
       }
