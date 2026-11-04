@@ -52,7 +52,7 @@ class GameContent {
     WeaponDefinition(name: 'Noisy Grandkid', icon: '↻', label: 'BABY', attack: WeaponAttack.noisy, cooldown: 5, damage: 40, projectileSpeed: .006),
     WeaponDefinition(name: 'Canvas Trolleys', icon: '▣', label: 'CARTS', attack: WeaponAttack.trolley, cooldown: 10),
     WeaponDefinition(name: 'Thermos Tea', icon: '☕', label: 'TEA', attack: WeaponAttack.tea, cooldown: 10, damage: 35),
-    WeaponDefinition(name: 'Pocket Radio', icon: '♫', label: 'RADIO', attack: WeaponAttack.radio, cooldown: 5, range: 2, damage: 15, hitRadius: .06),
+    WeaponDefinition(name: 'Pocket Radio', icon: '♫', label: 'RADIO', attack: WeaponAttack.radio, cooldown: 8, range: 2, damage: 15, hitRadius: .06),
     WeaponDefinition(name: 'Bingo Blaster', icon: '✦', label: 'BINGO', attack: WeaponAttack.bingo, cooldown: 3.5, damage: 22),
     WeaponDefinition(name: 'Garden Hose', icon: '≈', label: 'HOSE', attack: WeaponAttack.hose, cooldown: 4.5, damage: 24, hitRadius: .05),
     PassiveDefinition(name: 'Comfy Slippers', icon: '靴', label: 'SPEED'),

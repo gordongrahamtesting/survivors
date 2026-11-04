@@ -483,7 +483,7 @@ class ArenaPainter extends CustomPainter {
     for (final shockwave in shockwaves) {
       final progress = 1 - shockwave.life / 2.4;
       final center = at(shockwave.x, shockwave.y);
-      final radius = 18 + progress * 105;
+      final radius = 18 + progress * 180;
       final alpha = (shockwave.life / 2.4).clamp(0.0, 1.0);
       final pulse = Paint()
         ..color = const Color(0xffd4b35e).withValues(alpha: alpha)

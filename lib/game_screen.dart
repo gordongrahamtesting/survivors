@@ -395,19 +395,13 @@ class _GameScreenState extends State<GameScreen> {
             target = enemy;
           }
         }
-        if (weaponDefinition.attack == WeaponAttack.radio && target != null) {
-          final liveEnemies = _enemies.where((enemy) => enemy.hp > 0).toList();
-          target = liveEnemies[_random.nextInt(liveEnemies.length)];
-          best = math.sqrt(
-            (target.x - _px) * (target.x - _px) +
-                (target.y - _py) * (target.y - _py),
-          );
-        }
         final isCane = weaponDefinition.attack == WeaponAttack.cane;
         final isHose = weaponDefinition.attack == WeaponAttack.hose;
+        final isRadio = weaponDefinition.attack == WeaponAttack.radio;
         if (cooldown > 0) continue;
         final range = weaponDefinition.range;
-        final canFire = isHose || (target != null && (!isCane || best < range));
+        final canFire =
+            isHose || isRadio || (target != null && (!isCane || best < range));
         if (canFire) {
           final firingTarget = target;
           if (isCane) {
@@ -455,6 +449,40 @@ class _GameScreenState extends State<GameScreen> {
                   weapon,
                 ),
               );
+            }
+          } else if (isRadio) {
+            _shockwaves.add(Shockwave(_px, _py));
+            for (final enemy in _enemies) {
+              if (enemy.hp <= 0) continue;
+              final pushX = enemy.x - _px;
+              final pushY = enemy.y - _py;
+              final pushDistance = math.max(
+                .001,
+                math.sqrt(pushX * pushX + pushY * pushY),
+              );
+              final pushedX = enemy.x + pushX / pushDistance * .12;
+              final pushedY = enemy.y + pushY / pushDistance * .12;
+              if (!_blocked(pushedX, pushedY, .025)) {
+                enemy.x = pushedX;
+                enemy.y = pushedY;
+              }
+              enemy.stunned = 2.5;
+              enemy.hp -= _scaledDamage(weaponDefinition.damage);
+              _damageNumbers.add(
+                DamageNumber(
+                  enemy.x,
+                  enemy.y,
+                  weaponDefinition.damage,
+                  const Color(0xffffe29a),
+                ),
+              );
+              if (enemy.hp <= 0) {
+                _orbs.add(
+                  Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
+                );
+                _kills++;
+                _xp += 5;
+              }
             }
           } else {
             if (firingTarget == null) continue;
