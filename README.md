@@ -1,6 +1,6 @@
 # Grampa Survivors
 
-A browser-based survivors-style game built with Flutter.
+A browser-based survivors-style game built with Flutter - a work in progress with terrible humour.
 
 ## Play online
 
