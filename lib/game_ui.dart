@@ -392,11 +392,13 @@ class UpgradeOverlay extends StatelessWidget {
     required this.level,
     required this.levels,
     required this.choices,
+    required this.selectedIndex,
     required this.onChoose,
   });
   final int level;
   final Map<String, int> levels;
   final List<String> choices;
+  final int selectedIndex;
   final ValueChanged<String> onChoose;
 
   String _title(String weapon) {
@@ -406,105 +408,40 @@ class UpgradeOverlay extends StatelessWidget {
 
   String _rank(String weapon) => '${levels[weapon] ?? 0}/5';
 
-  Widget _choiceCard(String weapon) {
+  Widget _choiceCard(String weapon, bool isFocused) {
     switch (weapon) {
       case 'Werthers Originals':
-        return _card(
-          '◉',
-          weapon,
-          'Fires a candy projectile at a nearby enemy.',
-          const Color(0xffd98f4a),
-        );
+        return _card('◉', weapon, 'Fires a candy projectile at a nearby enemy.', const Color(0xffd98f4a), isFocused);
       case 'Upgraded Cane':
-        return _card(
-          '⌁',
-          weapon,
-          'Replaces the cane with a longer, wider melee swing.',
-          const Color(0xff77a8bd),
-        );
+        return _card('⌁', weapon, 'Replaces the cane with a longer, wider melee swing.', const Color(0xff77a8bd), isFocused);
       case 'Noisy Grandkid':
-        return _card(
-          '↻',
-          weapon,
-          'Launches a slow, loud projectile at a nearby enemy.',
-          const Color(0xffcf6c68),
-        );
+        return _card('↻', weapon, 'Launches a slow, loud projectile at a nearby enemy.', const Color(0xffcf6c68), isFocused);
       case 'Canvas Trolleys':
-        return _card(
-          '▣',
-          weapon,
-          'Five carts orbit Grampa and damage enemies on contact; upgrades spin faster.',
-          const Color(0xff91ad83),
-        );
+        return _card('▣', weapon, 'Five carts orbit Grampa and damage enemies on contact; upgrades spin faster.', const Color(0xff91ad83), isFocused);
       case 'Thermos Tea':
-        return _card(
-          '☕',
-          weapon,
-          'Targets an enemy and damages enemies in a large hot splash.',
-          const Color(0xffc88c62),
-        );
+        return _card('☕', weapon, 'Targets an enemy and damages enemies in a large hot splash.', const Color(0xffc88c62), isFocused);
       case 'Reading Glasses':
-        return _card(
-          '⌕',
-          weapon,
-          'A passive upgrade; currently has no additional combat effect.',
-          const Color(0xff9ca8d4),
-        );
+        return _card('⌕', weapon, 'A passive upgrade; currently has no additional combat effect.', const Color(0xff9ca8d4), isFocused);
       case 'Pocket Radio':
-        return _card(
-          '♫',
-          weapon,
-          'Stuns every enemy around Grampa for 2.5 seconds.',
-          const Color(0xffd4b35e),
-        );
+        return _card('♫', weapon, 'Stuns every enemy around Grampa for 2.5 seconds.', const Color(0xffd4b35e), isFocused);
       case 'Comfy Slippers':
-        return _card(
-          '靴',
-          weapon,
-          'Increases Grampa’s movement speed.',
-          const Color(0xffb98d68),
-        );
+        return _card('靴', weapon, 'Increases Grampa’s movement speed.', const Color(0xffb98d68), isFocused);
       case 'Helping Hand':
-        return _card(
-          '☝',
-          weapon,
-          'Increases the pickup radius for XP and rations.',
-          const Color(0xffd5a56a),
-        );
+        return _card('☝', weapon, 'Increases the pickup radius for XP and rations.', const Color(0xffd5a56a), isFocused);
       case 'Lucky Sweater':
-        return _card(
-          '♥',
-          weapon,
-          'Increases maximum health and reduces enemy contact damage.',
-          const Color(0xffd27d88),
-        );
+        return _card('♥', weapon, 'Increases maximum health and reduces enemy contact damage.', const Color(0xffd27d88), isFocused);
       case 'Silver Watch':
-        return _card(
-          '◷',
-          weapon,
-          'Reduces weapon cooldowns by 10% per rank.',
-          const Color(0xffb5c5d6),
-        );
+        return _card('◷', weapon, 'Reduces weapon cooldowns by 10% per rank.', const Color(0xffb5c5d6), isFocused);
       case 'Bingo Blaster':
-        return _card(
-          '✦',
-          weapon,
-          'Fires five random-direction bingo balls.',
-          const Color(0xffd8b15f),
-        );
+        return _card('✦', weapon, 'Fires five random-direction bingo balls.', const Color(0xffd8b15f), isFocused);
       case 'Garden Hose':
-        return _card(
-          '≈',
-          weapon,
-          'Fires eight water shots clockwise in all directions.',
-          const Color(0xff70b6c4),
-        );
+        return _card('≈', weapon, 'Fires eight water shots clockwise in all directions.', const Color(0xff70b6c4), isFocused);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _card(String icon, String weapon, String copy, Color color) {
+  Widget _card(String icon, String weapon, String copy, Color color, bool isFocused) {
     final isPassive =
         weapon == 'Comfy Slippers' ||
         weapon == 'Reading Glasses' ||
@@ -516,6 +453,7 @@ class UpgradeOverlay extends StatelessWidget {
       title: _title(weapon),
       copy: '${isPassive ? 'PASSIVE' : 'WEAPON'}  •  $copy  ${_rank(weapon)}',
       color: color,
+      isFocused: isFocused,
       onTap: () => onChoose(weapon),
     );
   }
@@ -553,7 +491,9 @@ class UpgradeOverlay extends StatelessWidget {
                 spacing: 14,
                 runSpacing: 14,
                 alignment: WrapAlignment.center,
-                children: choices.map(_choiceCard).toList(),
+                children: List.generate(choices.length, (index) {
+                  return _choiceCard(choices[index], index == selectedIndex);
+                }),
               ),
             ],
           ),
@@ -569,11 +509,14 @@ class _Card extends StatelessWidget {
     required this.title,
     required this.copy,
     required this.color,
+    required this.isFocused,
     required this.onTap,
   });
   final String icon, title, copy;
   final Color color;
+  final bool isFocused;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 210,
@@ -584,9 +527,12 @@ class _Card extends StatelessWidget {
         height: 182,
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
-          color: const Color(0xff18212a),
+          color: isFocused ? const Color(0xff222e3d) : const Color(0xff18212a),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: .55)),
+          border: Border.all(
+            color: isFocused ? Colors.white : color.withValues(alpha: .55),
+            width: isFocused ? 2.5 : 1.5,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,12 +557,12 @@ class _Card extends StatelessWidget {
             ),
             const SizedBox(height: 7),
             Text(
-              'SELECT  →',
+              isFocused ? 'PRESS A TO SELECT  →' : 'SELECT  →',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
-                color: color,
+                color: isFocused ? const Color(0xffffc15b) : color,
               ),
             ),
           ],

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gamepads/gamepads.dart';
 
 import 'arena_painter.dart';
 import 'game_content.dart';
@@ -21,6 +22,13 @@ class _GameScreenState extends State<GameScreen> {
   final _keys = <LogicalKeyboardKey>{};
   final _focus = FocusNode();
   final _enemies = <Enemy>[];
+  
+  // Gamepad stream subscription and tracking variables
+  StreamSubscription<NormalizedGamepadEvent>? _gamepadSubscription;
+  double _leftStickX = 0.0;
+  double _leftStickY = 0.0;
+  int _selectedUpgradeIndex = 0; // Tracks highlighted upgrade card on level up
+
   final _benches = const <ParkBench>[
     ParkBench(-1.55, -2.48, .28, .08),
     ParkBench(.85, -2.48, .28, .08),
@@ -271,10 +279,59 @@ class _GameScreenState extends State<GameScreen> {
       );
     }
     _timer = Timer.periodic(const Duration(milliseconds: 32), (_) => _tick());
+
+    // Listen to normalized gamepad events for navigation, combat movement, and pause
+    _gamepadSubscription = Gamepads.normalizedEvents.listen((event) {
+      setState(() {
+        // 1. Handle Upgrade Selection Screen
+        if (_levelUp) {
+          if (event.button == GamepadButton.dpadLeft && event.value != 0) {
+            _selectedUpgradeIndex = (_selectedUpgradeIndex - 1).clamp(0, _upgradeChoices.length - 1);
+          } else if (event.button == GamepadButton.dpadRight && event.value != 0) {
+            _selectedUpgradeIndex = (_selectedUpgradeIndex + 1).clamp(0, _upgradeChoices.length - 1);
+          } else if (event.axis == GamepadAxis.leftStickX) {
+            if (event.value < -0.5 && _leftStickX >= -0.5) {
+              _selectedUpgradeIndex = (_selectedUpgradeIndex - 1).clamp(0, _upgradeChoices.length - 1);
+            } else if (event.value > 0.5 && _leftStickX <= 0.5) {
+              _selectedUpgradeIndex = (_selectedUpgradeIndex + 1).clamp(0, _upgradeChoices.length - 1);
+            }
+            _leftStickX = event.value;
+          } else if (event.button == GamepadButton.a && event.value != 0) {
+            if (_upgradeChoices.isNotEmpty) {
+              _chooseUpgrade(_upgradeChoices[_selectedUpgradeIndex]);
+            }
+          }
+        } 
+        // 2. Handle Normal Gameplay Inputs
+        else {
+          if (event.axis == GamepadAxis.leftStickX) {
+            _leftStickX = event.value;
+          } else if (event.axis == GamepadAxis.leftStickY) {
+            _leftStickY = event.value;
+          } else if (event.button == GamepadButton.dpadLeft) {
+            event.value != 0 ? _keys.add(LogicalKeyboardKey.arrowLeft) : _keys.remove(LogicalKeyboardKey.arrowLeft);
+          } else if (event.button == GamepadButton.dpadRight) {
+            event.value != 0 ? _keys.add(LogicalKeyboardKey.arrowRight) : _keys.remove(LogicalKeyboardKey.arrowRight);
+          } else if (event.button == GamepadButton.dpadUp) {
+            event.value != 0 ? _keys.add(LogicalKeyboardKey.arrowUp) : _keys.remove(LogicalKeyboardKey.arrowUp);
+          } else if (event.button == GamepadButton.dpadDown) {
+            event.value != 0 ? _keys.add(LogicalKeyboardKey.arrowDown) : _keys.remove(LogicalKeyboardKey.arrowDown);
+          }
+        }
+
+        // 3. Handle Pause with Controller (Start Button)
+        if (event.button == GamepadButton.start && event.value != 0) {
+          if (!_gameOver && !_won && !_levelUp) {
+            _paused = !_paused;
+          }
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
+    _gamepadSubscription?.cancel();
     _timer?.cancel();
     _focus.dispose();
     super.dispose();
@@ -319,6 +376,8 @@ class _GameScreenState extends State<GameScreen> {
       _shockwaves.removeWhere((shockwave) => shockwave.life <= 0);
       final slipperRank = _weaponLevels['Comfy Slippers'] ?? 0;
       final speed = .0065 + slipperRank * .0007;
+
+      // Keyboard & D-Pad Movement inputs
       if (_keys.contains(LogicalKeyboardKey.keyW) ||
           _keys.contains(LogicalKeyboardKey.arrowUp)) {
         _movePlayer(0, -speed);
@@ -334,6 +393,15 @@ class _GameScreenState extends State<GameScreen> {
       if (_keys.contains(LogicalKeyboardKey.keyD) ||
           _keys.contains(LogicalKeyboardKey.arrowRight)) {
         _movePlayer(speed, 0);
+      }
+
+      // Analog Left Stick Movement inputs with deadzone
+      const double deadZone = 0.15;
+      if (_leftStickX.abs() > deadZone) {
+        _movePlayer(speed * _leftStickX, 0);
+      }
+      if (_leftStickY.abs() > deadZone) {
+        _movePlayer(0, -speed * _leftStickY);
       }
 
       final difficultyLevel = math.max(0, _level - 1);
@@ -773,6 +841,7 @@ class _GameScreenState extends State<GameScreen> {
         _upgradeChoices
           ..clear()
           ..addAll(upgradePool.take(3));
+        _selectedUpgradeIndex = 0; // Reset highlighted choice on level up
         _levelUp = true;
       }
     });
@@ -949,7 +1018,7 @@ class _GameScreenState extends State<GameScreen> {
                       bottom: 20,
                       left: 22,
                       child: Text(
-                        'WASD / ARROWS  MOVE   •   SPACE  PAUSE',
+                        'WASD / ARROWS / GAMEPAD  MOVE   •   START  PAUSE',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: .52),
                           fontSize: 11,
@@ -963,6 +1032,7 @@ class _GameScreenState extends State<GameScreen> {
                         level: _level,
                         levels: _weaponLevels,
                         choices: _upgradeChoices,
+                        selectedIndex: _selectedUpgradeIndex,
                         onChoose: _chooseUpgrade,
                       ),
                     if (_gameOver)
