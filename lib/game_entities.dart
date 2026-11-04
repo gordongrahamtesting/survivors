@@ -19,6 +19,7 @@ class Enemy {
   double vx;
   double vy;
   bool trajectoryOnly;
+  bool facingRight = true;
   late double hp = maxHp;
   double stunned = 0;
   double teaDamageCooldown = 0;

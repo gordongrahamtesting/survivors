@@ -121,6 +121,21 @@ class _GameScreenState extends State<GameScreen> {
       math.max(0, _level - 4) * 10 +
       math.max(0, _elapsed - 90) / 60 * 8;
 
+  void _dropOrb(double x, double y) {
+    final roll = _random.nextDouble();
+    _orbs.add(
+      Orb(
+        x,
+        y,
+        roll < .015
+            ? 2
+            : roll < .075
+            ? 1
+            : 0,
+      ),
+    );
+  }
+
   Enemy _newEnemy(double x, double y, EnemyType type) {
     var spawnX = x;
     var spawnY = y;
@@ -229,7 +244,9 @@ class _GameScreenState extends State<GameScreen> {
       _swingTimer = math.max(0, _swingTimer - .032);
       _hitTimer = math.max(0, _hitTimer - .032);
       _teaSplashTimer = math.max(0, _teaSplashTimer - .032);
-      _trolleyAngle = (_trolleyAngle + .025) % (math.pi * 2);
+      final trolleySpinRank = _weaponLevels['Canvas Trolleys'] ?? 1;
+      _trolleyAngle =
+          (_trolleyAngle + .025 + trolleySpinRank * .004) % (math.pi * 2);
       _updatePigeons();
       if (_ownedWeapons.contains('Canvas Trolleys')) {
         if (_trolleyActive > 0) {
@@ -313,6 +330,7 @@ class _GameScreenState extends State<GameScreen> {
             nextY += dy / d * enemySpeed;
           }
           if (_blocked(nextX, nextY, .025)) {
+            enemy.trajectoryOnly = false;
             final options = [
               math.Point(nextX + enemySpeed, nextY),
               math.Point(nextX - enemySpeed, nextY),
@@ -334,6 +352,7 @@ class _GameScreenState extends State<GameScreen> {
             }
           }
           if (!_blocked(nextX, nextY, .025)) {
+            enemy.facingRight = nextX >= enemy.x;
             enemy.x = nextX;
             enemy.y = nextY;
           }
@@ -354,7 +373,7 @@ class _GameScreenState extends State<GameScreen> {
             (enemy.x - _teaSplashX) * (enemy.x - _teaSplashX) +
                 (enemy.y - _teaSplashY) * (enemy.y - _teaSplashY),
           );
-          if (splashDistance < .16 &&
+          if (splashDistance < .22 &&
               enemy.hp > 0 &&
               enemy.teaDamageCooldown == 0) {
             enemy.hp -= _scaledDamage(12);
@@ -363,9 +382,7 @@ class _GameScreenState extends State<GameScreen> {
               DamageNumber(enemy.x, enemy.y, 12, const Color(0xffffc58a)),
             );
             if (enemy.hp <= 0) {
-              _orbs.add(
-                Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
-              );
+              _dropOrb(enemy.x, enemy.y);
               _kills++;
               _xp += 5;
             }
@@ -468,9 +485,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 );
                 if (enemy.hp <= 0) {
-                  _orbs.add(
-                    Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
-                  );
+                  _dropOrb(enemy.x, enemy.y);
                   _kills++;
                   _xp += 5;
                 }
@@ -493,19 +508,7 @@ class _GameScreenState extends State<GameScreen> {
             _shockwaves.add(Shockwave(_px, _py));
             for (final enemy in _enemies) {
               if (enemy.hp <= 0) continue;
-              final pushX = enemy.x - _px;
-              final pushY = enemy.y - _py;
-              final pushDistance = math.max(
-                .001,
-                math.sqrt(pushX * pushX + pushY * pushY),
-              );
-              final pushedX = enemy.x + pushX / pushDistance * .12;
-              final pushedY = enemy.y + pushY / pushDistance * .12;
-              if (!_blocked(pushedX, pushedY, .025)) {
-                enemy.x = pushedX;
-                enemy.y = pushedY;
-              }
-              enemy.stunned = 2.5;
+              enemy.stunned = 4;
               enemy.hp -= _scaledDamage(weaponDefinition.damage);
               _damageNumbers.add(
                 DamageNumber(
@@ -516,9 +519,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               );
               if (enemy.hp <= 0) {
-                _orbs.add(
-                  Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
-                );
+                _dropOrb(enemy.x, enemy.y);
                 _kills++;
                 _xp += 5;
               }
@@ -537,16 +538,14 @@ class _GameScreenState extends State<GameScreen> {
                   (enemy.x - firingTarget.x) * (enemy.x - firingTarget.x) +
                       (enemy.y - firingTarget.y) * (enemy.y - firingTarget.y),
                 );
-                if (splashDistance < .16 && enemy.hp > 0) {
+                if (splashDistance < .22 && enemy.hp > 0) {
                   enemy.hp -= _scaledDamage(35);
                   enemy.teaDamageCooldown = .35;
                   _damageNumbers.add(
                     DamageNumber(enemy.x, enemy.y, 35, const Color(0xffffc58a)),
                   );
                   if (enemy.hp <= 0) {
-                    _orbs.add(
-                      Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
-                    );
+                    _dropOrb(enemy.x, enemy.y);
                     _kills++;
                     _xp += 5;
                   }
@@ -608,9 +607,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               );
               if (enemy.hp <= 0) {
-                _orbs.add(
-                  Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
-                );
+                _dropOrb(enemy.x, enemy.y);
                 _kills++;
                 _xp += 5;
               }
@@ -664,9 +661,7 @@ class _GameScreenState extends State<GameScreen> {
               DamageNumber(enemy.x, enemy.y, damage, damageColor),
             );
             if (enemy.hp <= 0) {
-              _orbs.add(
-                Orb(enemy.x, enemy.y, _random.nextDouble() < .06 ? 1 : 0),
-              );
+              _dropOrb(enemy.x, enemy.y);
               _kills++;
               _xp += 5;
             }
@@ -695,7 +690,16 @@ class _GameScreenState extends State<GameScreen> {
           distance = math.sqrt(dx * dx + dy * dy);
         }
         if (distance < .055) {
-          _xp += orb.type == 0 ? 3 : 0;
+          if (orb.type == 2) {
+            for (final xpOrb in _orbs) {
+              if (xpOrb.type == 0 && xpOrb.x >= 0) {
+                _xp += 3;
+                xpOrb.x = -1;
+              }
+            }
+          } else {
+            _xp += orb.type == 0 ? 3 : 0;
+          }
           if (orb.type == 1) _hp = math.min(_maxHp(), _hp + 14);
           orb.x = -1;
         }

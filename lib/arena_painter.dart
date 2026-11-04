@@ -224,7 +224,29 @@ class ArenaPainter extends CustomPainter {
     }
     for (final orb in orbs) {
       final p = at(orb.x, orb.y);
-      if (orb.type == 1) {
+      if (orb.type == 2) {
+        canvas.drawCircle(
+          p,
+          18,
+          Paint()..color = const Color(0xffd98cff).withValues(alpha: .2),
+        );
+        canvas.drawCircle(p, 9, Paint()..color = const Color(0xffb45cff));
+        canvas.drawCircle(p, 5, Paint()..color = const Color(0xfff0d7ff));
+        canvas.drawLine(
+          p + const Offset(-8, 0),
+          p + const Offset(8, 0),
+          Paint()
+            ..color = Colors.white
+            ..strokeWidth = 2,
+        );
+        canvas.drawLine(
+          p + const Offset(0, -8),
+          p + const Offset(0, 8),
+          Paint()
+            ..color = Colors.white
+            ..strokeWidth = 2,
+        );
+      } else if (orb.type == 1) {
         final glow = Paint()
           ..color = const Color(0xffd8b15f).withValues(alpha: .18);
         canvas.drawCircle(p, 14, glow);
@@ -506,6 +528,12 @@ class ArenaPainter extends CustomPainter {
     }
     for (final e in enemies) {
       final p = at(e.x, e.y);
+      if (e.type == EnemyType.scooterTeen) {
+        canvas.save();
+        canvas.translate(p.dx, p.dy);
+        canvas.scale(e.facingRight ? 1 : -1, 1);
+        canvas.translate(-p.dx, -p.dy);
+      }
       final stunned = e.stunned > 0;
       final color = e.type == EnemyType.scooterTeen
           ? const Color(0xffd08b52)
@@ -725,13 +753,14 @@ class ArenaPainter extends CustomPainter {
             ..strokeWidth = 4,
         );
       }
+      if (e.type == EnemyType.scooterTeen) canvas.restore();
     }
     final g = at(px, py);
     if (teaSplashTimer > 0) {
       final splashProgress = 1 - teaSplashTimer / 2.8;
       final splashAlpha = math.min(1.0, .35 + teaSplashTimer / 2.8);
       final splash = at(teaSplashX, teaSplashY);
-      final radius = 30 + splashProgress * 78;
+      final radius = 38 + splashProgress * 108;
       canvas.drawCircle(
         splash,
         radius,
