@@ -62,7 +62,7 @@ class ArenaPainter extends CustomPainter {
     final bg = Paint()..color = const Color(0xff6fa05b);
     canvas.drawRect(Offset.zero & size, bg);
     final area = Rect.fromLTWH(0, 76, size.width, size.height - 76);
-    final worldScale = math.min(size.width, size.height - 76) * .82;
+    final worldScale = math.min(size.width, size.height - 76) * .70;
     final worldCenter = Offset(size.width / 2, 76 + (size.height - 76) / 2);
     Offset at(double x, double y) => Offset(
       worldCenter.dx + (x - px) * worldScale,

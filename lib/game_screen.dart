@@ -25,13 +25,13 @@ class _GameScreenState extends State<GameScreen> {
     ParkBench(-1.55, -2.48, .28, .08),
     ParkBench(.85, -2.48, .28, .08),
     ParkBench(2.65, -2.48, .28, .08),
-    ParkBench(-2.84, -.55, .08, .28),
+    ParkBench(-2.84, -.28, .08, .28),
     ParkBench(-1.55, -.27, .28, .08),
     ParkBench(2.65, -.27, .28, .08),
     ParkBench(3.52, .78, .28, .08),
-    ParkBench(-3.52, 2.18, .28, .08),
-    ParkBench(.85, 2.18, .28, .08),
-    ParkBench(2.65, 2.18, .28, .08),
+    ParkBench(-3.52, 2.28, .28, .08),
+    ParkBench(.85, 2.28, .28, .08),
+    ParkBench(2.65, 2.28, .28, .08),
   ];
   final _paths = const <ParkPath>[
     ParkPath(0, -4.25, 8.5, .22),
@@ -47,10 +47,10 @@ class _GameScreenState extends State<GameScreen> {
     ParkPath(0, 1.95, 8.5, .2),
   ];
   final _picnicTables = const <PicnicTable>[
-    PicnicTable(-1.55, -1.35, 0),
-    PicnicTable(.85, -1.35, math.pi / 2),
-    PicnicTable(2.65, 1.05, 0),
-    PicnicTable(-3.52, 1.05, math.pi / 2),
+    PicnicTable(-1.25, -1.25, 0),
+    PicnicTable(.45, -1.35, math.pi / 2),
+    PicnicTable(2.9, 1.2, 0),
+    PicnicTable(-3.55, 1.4, math.pi / 2),
   ];
   final _trees = const <ParkTree>[
     ParkTree(-3.55, -1.65, .65),
@@ -209,6 +209,13 @@ class _GameScreenState extends State<GameScreen> {
       final dx = x - tree.x;
       final dy = y - tree.y;
       if (dx * dx + dy * dy < (treeRadius + radius) * (treeRadius + radius)) {
+        return true;
+      }
+    }
+    for (final table in _picnicTables) {
+      final dx = x - table.x;
+      final dy = y - table.y;
+      if (dx * dx + dy * dy < (.16 + radius) * (.16 + radius)) {
         return true;
       }
     }
