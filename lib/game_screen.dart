@@ -122,11 +122,24 @@ class _GameScreenState extends State<GameScreen> {
       math.max(0, _elapsed - 90) / 60 * 8;
 
   Enemy _newEnemy(double x, double y, EnemyType type) {
-    final angle = math.atan2(-y, -x) + (_random.nextDouble() - .5) * .9;
+    var spawnX = x;
+    var spawnY = y;
+    for (
+      var attempt = 0;
+      attempt < 12 && _blocked(spawnX, spawnY, .04);
+      attempt++
+    ) {
+      final angle = _random.nextDouble() * math.pi * 2;
+      final distance = .18 + _random.nextDouble() * .28;
+      spawnX = _px + math.cos(angle) * distance;
+      spawnY = _py + math.sin(angle) * distance;
+    }
+    final angle =
+        math.atan2(-spawnY, -spawnX) + (_random.nextDouble() - .5) * .9;
     final trajectoryOnly = _random.nextDouble() < .58;
     return Enemy(
-      x,
-      y,
+      spawnX,
+      spawnY,
       type,
       _enemyHealth(),
       vx: math.cos(angle),
