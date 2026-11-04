@@ -366,7 +366,7 @@ class _GameScreenState extends State<GameScreen> {
         final dx = _px - enemy.x, dy = _py - enemy.y;
         final d = math.sqrt(dx * dx + dy * dy);
         if (d > playerContactRadius) {
-          final enemySpeed = .00145 + difficultyLevel * .00008;
+          final enemySpeed = .00200 + difficultyLevel * .00008;
           var nextX = enemy.x;
           var nextY = enemy.y;
           if (enemy.trajectoryOnly && d > .28) {
