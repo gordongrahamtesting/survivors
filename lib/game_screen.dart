@@ -107,8 +107,19 @@ class _GameScreenState extends State<GameScreen> {
 
   int _xpToLevel() => 52 + _level * 25;
 
+  int _pressureStage() {
+    if (_elapsed >= 19 * 60) return 4;
+    if (_elapsed >= 15 * 60) return 3;
+    if (_elapsed >= 9 * 60) return 2;
+    if (_elapsed >= 3 * 60) return 1;
+    return 0;
+  }
+
   double _enemyHealth() =>
-      18 + math.max(0, _level - 4) * 10 + math.max(0, _elapsed - 90) / 60 * 8;
+      18 +
+      _pressureStage() * 12 +
+      math.max(0, _level - 4) * 10 +
+      math.max(0, _elapsed - 90) / 60 * 8;
 
   Enemy _newEnemy(double x, double y, EnemyType type) {
     final angle = math.atan2(-y, -x) + (_random.nextDouble() - .5) * .9;
@@ -247,15 +258,16 @@ class _GameScreenState extends State<GameScreen> {
       }
 
       final difficultyLevel = math.max(0, _level - 1);
+      final pressureStage = _pressureStage();
       final spawnInterval = math.max(
         .38,
-        1.15 - _elapsed / 100 - difficultyLevel * .05,
+        1.15 - _elapsed / 100 - difficultyLevel * .05 - pressureStage * .08,
       );
       if (_spawnClock > spawnInterval) {
         _spawnClock = 0;
-        final maxEnemies = 22 + difficultyLevel * 3;
+        final maxEnemies = 22 + difficultyLevel * 3 + pressureStage * 8;
         final spawns = math.min(
-          1 + difficultyLevel ~/ 3,
+          1 + difficultyLevel ~/ 3 + pressureStage * 2,
           maxEnemies - _enemies.length,
         );
         for (var spawn = 0; spawn < spawns; spawn++) {
