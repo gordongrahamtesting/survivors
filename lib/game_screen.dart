@@ -135,7 +135,8 @@ class _GameScreenState extends State<GameScreen> {
       spawnY = _py + math.sin(angle) * distance;
     }
     final angle =
-        math.atan2(-spawnY, -spawnX) + (_random.nextDouble() - .5) * .9;
+        math.atan2(_py - spawnY, _px - spawnX) +
+        (_random.nextDouble() - .5) * .9;
     final trajectoryOnly = _random.nextDouble() < .58;
     return Enemy(
       spawnX,
@@ -285,7 +286,7 @@ class _GameScreenState extends State<GameScreen> {
         );
         for (var spawn = 0; spawn < spawns; spawn++) {
           final edge = _random.nextInt(4);
-          final distance = 1.0 + _random.nextDouble() * .25;
+          final distance = .72 + _random.nextDouble() * .16;
           final x = _px + (edge < 2 ? (edge == 0 ? -distance : distance) : 0);
           final y = _py + (edge >= 2 ? (edge == 2 ? -distance : distance) : 0);
           _enemies.add(_newEnemy(x, y, EnemyType.values[_random.nextInt(4)]));
