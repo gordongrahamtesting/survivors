@@ -33,6 +33,21 @@ class ParkBench {
   final double height;
 }
 
+class ParkPath {
+  const ParkPath(this.x, this.y, this.width, this.height);
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+}
+
+class PicnicTable {
+  const PicnicTable(this.x, this.y, this.rotation);
+  final double x;
+  final double y;
+  final double rotation;
+}
+
 class ParkTree {
   const ParkTree(this.x, this.y, this.size);
   final double x;

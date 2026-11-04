@@ -22,16 +22,30 @@ class _GameScreenState extends State<GameScreen> {
   final _focus = FocusNode();
   final _enemies = <Enemy>[];
   final _benches = const <ParkBench>[
-    ParkBench(-.55, -.34, .24, .08),
-    ParkBench(.48, -.46, .08, .25),
-    ParkBench(-.8, .48, .25, .08),
-    ParkBench(.72, .62, .08, .25),
-    ParkBench(-1.35, -.8, .3, .09),
-    ParkBench(1.28, -.9, .09, .3),
-    ParkBench(-1.4, 1.05, .3, .09),
-    ParkBench(1.35, 1.12, .09, .3),
-    ParkBench(2.05, .05, .28, .09),
-    ParkBench(-2.05, -.05, .28, .09),
+    ParkBench(-.48, -.22, .24, .08),
+    ParkBench(.48, -.22, .24, .08),
+    ParkBench(-.48, .22, .24, .08),
+    ParkBench(.48, .22, .24, .08),
+    ParkBench(-1.45, -.72, .28, .08),
+    ParkBench(1.45, -.72, .28, .08),
+    ParkBench(-1.45, .72, .28, .08),
+    ParkBench(1.45, .72, .28, .08),
+    ParkBench(-2.1, 0, .28, .08),
+    ParkBench(2.1, 0, .28, .08),
+  ];
+  final _paths = const <ParkPath>[
+    ParkPath(0, 0, 5.8, .12),
+    ParkPath(0, 0, .12, 4.8),
+    ParkPath(0, -.92, 3.8, .1),
+    ParkPath(0, .92, 3.8, .1),
+    ParkPath(-1.55, 0, .1, 3.7),
+    ParkPath(1.55, 0, .1, 3.7),
+  ];
+  final _picnicTables = const <PicnicTable>[
+    PicnicTable(-1.05, -1.35, 0),
+    PicnicTable(1.1, -1.35, math.pi / 2),
+    PicnicTable(-1.05, 1.35, math.pi / 2),
+    PicnicTable(1.1, 1.35, 0),
   ];
   final _trees = const <ParkTree>[
     ParkTree(-1.9, -1.35, .9),
@@ -46,6 +60,14 @@ class _GameScreenState extends State<GameScreen> {
     LampPost(1.05, -.95),
     LampPost(-1.05, .95),
     LampPost(1.05, .95),
+    LampPost(-.72, -.92),
+    LampPost(.72, -.92),
+    LampPost(-.72, .92),
+    LampPost(.72, .92),
+    LampPost(-1.55, -.62),
+    LampPost(-1.55, .62),
+    LampPost(1.55, -.62),
+    LampPost(1.55, .62),
   ];
   final _pigeons = <Pigeon>[
     Pigeon(-.35, .12),
@@ -726,6 +748,8 @@ class _GameScreenState extends State<GameScreen> {
                         _lampPosts,
                         _pigeons,
                         _walkTime,
+                        _paths,
+                        _picnicTables,
                       ),
                       size: Size(constraints.maxWidth, constraints.maxHeight),
                     ),

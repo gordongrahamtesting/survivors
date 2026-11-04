@@ -29,6 +29,8 @@ class ArenaPainter extends CustomPainter {
     this.lampPosts,
     this.pigeons,
     this.walkTime,
+    this.paths,
+    this.picnicTables,
   );
   final double px, py;
   final List<Enemy> enemies;
@@ -51,6 +53,8 @@ class ArenaPainter extends CustomPainter {
   final List<LampPost> lampPosts;
   final List<Pigeon> pigeons;
   final double walkTime;
+  final List<ParkPath> paths;
+  final List<PicnicTable> picnicTables;
   @override
   void paint(Canvas canvas, Size size) {
     final bg = Paint()..color = const Color(0xff6fa05b);
@@ -83,78 +87,107 @@ class ArenaPainter extends CustomPainter {
           canvas.drawCircle(p, 1.2, grass);
         }
       }
-      for (final tree in trees) {
-        final p = at(tree.x, tree.y);
-        final radius = tree.size * worldScale * .22;
-        canvas.drawCircle(
-          p + Offset(5, radius * .7),
-          radius * 1.15,
-          Paint()..color = const Color(0xff385f3b).withValues(alpha: .35),
-        );
-        canvas.drawRect(
-          Rect.fromCenter(
-            center: p + Offset(0, radius * .65),
-            width: radius * .25,
-            height: radius * 1.25,
-          ),
-          Paint()..color = const Color(0xff765039),
-        );
-        canvas.drawCircle(p, radius, Paint()..color = const Color(0xff2f713d));
-        canvas.drawCircle(
-          p + Offset(-radius * .55, radius * .12),
-          radius * .7,
-          Paint()..color = const Color(0xff3f8448),
-        );
-        canvas.drawCircle(
-          p + Offset(radius * .52, radius * .08),
-          radius * .65,
-          Paint()..color = const Color(0xff4a914c),
-        );
-      }
-      for (final lamp in lampPosts) {
-        final p = at(lamp.x, lamp.y);
-        final post = Paint()
-          ..color = const Color(0xff424b4d)
-          ..strokeWidth = 4;
-        canvas.drawLine(
-          p + const Offset(0, 18),
-          p + const Offset(0, -28),
-          post,
-        );
-        canvas.drawLine(
-          p + const Offset(-8, -28),
-          p + const Offset(8, -28),
-          post,
-        );
-        canvas.drawCircle(
-          p + const Offset(0, -30),
-          7,
-          Paint()..color = const Color(0xffffe19a).withValues(alpha: .8),
-        );
-      }
-      for (final pigeon in pigeons) {
-        final p = at(pigeon.x, pigeon.y);
-        final wing = pigeon.startled > 0
-            ? math.sin(pigeon.startled * 18).abs() * 5
-            : 0.0;
-        final bird = Paint()..color = const Color(0xffd9dedb);
-        canvas.drawOval(Rect.fromCenter(center: p, width: 14, height: 9), bird);
-        canvas.drawCircle(p + const Offset(7, -2), 3, bird);
-        canvas.drawLine(
-          p + Offset(-3, -2 - wing),
-          p + Offset(-9, -8 - wing),
-          Paint()
-            ..color = const Color(0xff8a9693)
-            ..strokeWidth = 3,
-        );
-        canvas.drawLine(
-          p + Offset(0, -2 + wing),
-          p + Offset(6, -8 + wing),
-          Paint()
-            ..color = const Color(0xff8a9693)
-            ..strokeWidth = 3,
-        );
-      }
+    }
+    for (final path in paths) {
+      final rect = Rect.fromCenter(
+        center: at(path.x, path.y),
+        width: path.width * worldScale,
+        height: path.height * worldScale,
+      );
+      canvas.drawRect(rect, Paint()..color = const Color(0xffc7b486));
+      canvas.drawRect(
+        rect.deflate(3),
+        Paint()..color = const Color(0xffd5c596).withValues(alpha: .6),
+      );
+    }
+    for (final tree in trees) {
+      final p = at(tree.x, tree.y);
+      final radius = tree.size * worldScale * .22;
+      canvas.drawCircle(
+        p + Offset(5, radius * .7),
+        radius * 1.15,
+        Paint()..color = const Color(0xff385f3b).withValues(alpha: .35),
+      );
+      canvas.drawRect(
+        Rect.fromCenter(
+          center: p + Offset(0, radius * .65),
+          width: radius * .25,
+          height: radius * 1.25,
+        ),
+        Paint()..color = const Color(0xff765039),
+      );
+      canvas.drawCircle(p, radius, Paint()..color = const Color(0xff2f713d));
+      canvas.drawCircle(
+        p + Offset(-radius * .55, radius * .12),
+        radius * .7,
+        Paint()..color = const Color(0xff3f8448),
+      );
+      canvas.drawCircle(
+        p + Offset(radius * .52, radius * .08),
+        radius * .65,
+        Paint()..color = const Color(0xff4a914c),
+      );
+    }
+    for (final table in picnicTables) {
+      final p = at(table.x, table.y);
+      canvas.save();
+      canvas.translate(p.dx, p.dy);
+      canvas.rotate(table.rotation);
+      final wood = Paint()..color = const Color(0xff9a633d);
+      canvas.drawRect(const Rect.fromLTWH(-25, -5, 50, 10), wood);
+      canvas.drawRect(const Rect.fromLTWH(-25, 16, 50, 7), wood);
+      canvas.drawRect(const Rect.fromLTWH(-17, -15, 34, 5), wood);
+      canvas.drawLine(
+        const Offset(-17, 7),
+        const Offset(-10, 25),
+        wood..strokeWidth = 3,
+      );
+      canvas.drawLine(
+        const Offset(17, 7),
+        const Offset(10, 25),
+        wood..strokeWidth = 3,
+      );
+      canvas.restore();
+    }
+    for (final lamp in lampPosts) {
+      final p = at(lamp.x, lamp.y);
+      final post = Paint()
+        ..color = const Color(0xff424b4d)
+        ..strokeWidth = 4;
+      canvas.drawLine(p + const Offset(0, 18), p + const Offset(0, -28), post);
+      canvas.drawLine(
+        p + const Offset(-8, -28),
+        p + const Offset(8, -28),
+        post,
+      );
+      canvas.drawCircle(
+        p + const Offset(0, -30),
+        7,
+        Paint()..color = const Color(0xffffe19a).withValues(alpha: .8),
+      );
+    }
+    for (final pigeon in pigeons) {
+      final p = at(pigeon.x, pigeon.y);
+      final wing = pigeon.startled > 0
+          ? math.sin(pigeon.startled * 18).abs() * 5
+          : 0.0;
+      final bird = Paint()..color = const Color(0xffd9dedb);
+      canvas.drawOval(Rect.fromCenter(center: p, width: 14, height: 9), bird);
+      canvas.drawCircle(p + const Offset(7, -2), 3, bird);
+      canvas.drawLine(
+        p + Offset(-3, -2 - wing),
+        p + Offset(-9, -8 - wing),
+        Paint()
+          ..color = const Color(0xff8a9693)
+          ..strokeWidth = 3,
+      );
+      canvas.drawLine(
+        p + Offset(0, -2 + wing),
+        p + Offset(6, -8 + wing),
+        Paint()
+          ..color = const Color(0xff8a9693)
+          ..strokeWidth = 3,
+      );
     }
     for (final bench in benches) {
       final center = at(bench.x, bench.y);
