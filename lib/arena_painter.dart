@@ -74,12 +74,6 @@ class ArenaPainter extends CustomPainter {
     );
     canvas.save();
     canvas.clipRect(area);
-    final pathPaint = Paint()
-      ..color = const Color(0xffb8a879).withValues(alpha: .4)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = worldScale * .22;
-    canvas.drawLine(at(-5, 0), at(5, 0), pathPaint);
-    canvas.drawLine(at(0, -5), at(0, 5), pathPaint);
     final grass = Paint()
       ..color = const Color(0xff4f8049).withValues(alpha: .3);
     for (var x = -6.0; x <= 6; x += .25) {
