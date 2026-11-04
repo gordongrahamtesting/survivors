@@ -135,12 +135,16 @@ class ArenaPainter extends CustomPainter {
         RRect.fromRectAndRadius(rect, const Radius.circular(8)),
         paint,
       );
-      for (var x = rect.left + 5; x < rect.right; x += 9) {
-        canvas.drawCircle(
-          Offset(x, rect.center.dy - 2),
-          5,
-          Paint()..color = const Color(0xff638e4c),
-        );
+      final horizontal = rect.width >= rect.height;
+      final accent = Paint()..color = const Color(0xff638e4c);
+      if (horizontal) {
+        for (var x = rect.left + 5; x < rect.right; x += 9) {
+          canvas.drawCircle(Offset(x, rect.center.dy - 2), 5, accent);
+        }
+      } else {
+        for (var y = rect.top + 5; y < rect.bottom; y += 9) {
+          canvas.drawCircle(Offset(rect.center.dx - 2, y), 5, accent);
+        }
       }
     }
     for (final table in picnicTables) {
