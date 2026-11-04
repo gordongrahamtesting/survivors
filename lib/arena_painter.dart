@@ -224,7 +224,40 @@ class ArenaPainter extends CustomPainter {
     }
     for (final orb in orbs) {
       final p = at(orb.x, orb.y);
-      if (orb.type == 2) {
+      if (orb.type == 3) {
+        canvas.drawCircle(
+          p,
+          18,
+          Paint()..color = const Color(0xffd96b34).withValues(alpha: .22),
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: p, width: 18, height: 25),
+            const Radius.circular(4),
+          ),
+          Paint()..color = const Color(0xffb94d2b),
+        );
+        canvas.drawRect(
+          Rect.fromCenter(
+            center: p + const Offset(0, -4),
+            width: 12,
+            height: 8,
+          ),
+          Paint()..color = const Color(0xfff0d7a0),
+        );
+        canvas.drawCircle(
+          p + const Offset(0, -4),
+          3,
+          Paint()..color = const Color(0xff9b3325),
+        );
+        canvas.drawLine(
+          p + const Offset(-7, 9),
+          p + const Offset(7, 9),
+          Paint()
+            ..color = const Color(0xfff0d7a0)
+            ..strokeWidth = 2,
+        );
+      } else if (orb.type == 2) {
         canvas.drawCircle(
           p,
           18,

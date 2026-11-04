@@ -75,7 +75,7 @@ class Orb {
   Orb(this.x, this.y, this.type);
   double x;
   double y;
-  final int type; // 0 xp, 1 ration
+  final int type; // 0 xp, 1 ration, 2 XP magnet, 3 Old Spice can
   bool pulledToPlayer = false;
 }
 

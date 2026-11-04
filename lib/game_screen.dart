@@ -129,6 +129,8 @@ class _GameScreenState extends State<GameScreen> {
         y,
         roll < .003
             ? 2
+            : roll < .006
+            ? 3
             : roll < .035
             ? 1
             : 0,
@@ -697,6 +699,13 @@ class _GameScreenState extends State<GameScreen> {
               if (xpOrb.type == 0 && xpOrb.x >= 0) {
                 xpOrb.pulledToPlayer = true;
               }
+            }
+          } else if (orb.type == 3) {
+            final destroyed = _enemies.where((enemy) => enemy.hp > 0).length;
+            _kills += destroyed;
+            _xp += destroyed * 5;
+            for (final enemy in _enemies) {
+              enemy.hp = 0;
             }
           } else {
             _xp += orb.type == 0 ? 3 : 0;
