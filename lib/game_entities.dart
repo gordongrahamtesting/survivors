@@ -56,6 +56,14 @@ class ParkTree {
   final double size;
 }
 
+class ParkHedge {
+  const ParkHedge(this.x, this.y, this.width, this.height);
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+}
+
 class LampPost {
   const LampPost(this.x, this.y);
   final double x;

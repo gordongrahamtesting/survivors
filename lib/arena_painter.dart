@@ -26,6 +26,7 @@ class ArenaPainter extends CustomPainter {
     this.weapon,
     this.benches,
     this.trees,
+    this.hedges,
     this.lampPosts,
     this.pigeons,
     this.walkTime,
@@ -50,6 +51,7 @@ class ArenaPainter extends CustomPainter {
   final String weapon;
   final List<ParkBench> benches;
   final List<ParkTree> trees;
+  final List<ParkHedge> hedges;
   final List<LampPost> lampPosts;
   final List<Pigeon> pigeons;
   final double walkTime;
@@ -127,6 +129,25 @@ class ArenaPainter extends CustomPainter {
         radius * .65,
         Paint()..color = const Color(0xff4a914c),
       );
+    }
+    for (final hedge in hedges) {
+      final rect = Rect.fromCenter(
+        center: at(hedge.x, hedge.y),
+        width: hedge.width * worldScale,
+        height: hedge.height * worldScale,
+      );
+      final paint = Paint()..color = const Color(0xff496f3d);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, const Radius.circular(8)),
+        paint,
+      );
+      for (var x = rect.left + 5; x < rect.right; x += 9) {
+        canvas.drawCircle(
+          Offset(x, rect.center.dy - 2),
+          5,
+          Paint()..color = const Color(0xff638e4c),
+        );
+      }
     }
     for (final table in picnicTables) {
       final p = at(table.x, table.y);

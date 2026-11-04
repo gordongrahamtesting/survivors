@@ -59,6 +59,14 @@ class _GameScreenState extends State<GameScreen> {
     ParkTree(-3.2, .35, .8),
     ParkTree(3.1, -.35, .9),
   ];
+  final _hedges = const <ParkHedge>[
+    ParkHedge(-2.2, -.95, .48, .1),
+    ParkHedge(2.2, .95, .48, .1),
+    ParkHedge(-.95, 1.85, .1, .48),
+    ParkHedge(.95, -1.85, .1, .48),
+    ParkHedge(-3.15, -1.05, .48, .1),
+    ParkHedge(3.15, 1.05, .48, .1),
+  ];
   final _lampPosts = const <LampPost>[
     LampPost(-.22, -.55),
     LampPost(.22, -.55),
@@ -174,6 +182,12 @@ class _GameScreenState extends State<GameScreen> {
     for (final bench in _benches) {
       if ((x - bench.x).abs() < bench.width / 2 + radius &&
           (y - bench.y).abs() < bench.height / 2 + radius) {
+        return true;
+      }
+    }
+    for (final hedge in _hedges) {
+      if ((x - hedge.x).abs() < hedge.width / 2 + radius &&
+          (y - hedge.y).abs() < hedge.height / 2 + radius) {
         return true;
       }
     }
@@ -302,16 +316,16 @@ class _GameScreenState extends State<GameScreen> {
       );
       if (_spawnClock > spawnInterval) {
         _spawnClock = 0;
-        final maxEnemies = 30 + difficultyLevel * 4 + pressureStage * 10;
+        final maxEnemies = 58 + difficultyLevel * 5 + pressureStage * 12;
         final spawns = math.min(
-          2 + difficultyLevel ~/ 3 + pressureStage * 2,
+          3 + difficultyLevel ~/ 2 + pressureStage * 3,
           maxEnemies - _enemies.length,
         );
         for (var spawn = 0; spawn < spawns; spawn++) {
-          final edge = _random.nextInt(4);
-          final distance = .72 + _random.nextDouble() * .16;
-          final x = _px + (edge < 2 ? (edge == 0 ? -distance : distance) : 0);
-          final y = _py + (edge >= 2 ? (edge == 2 ? -distance : distance) : 0);
+          final angle = _random.nextDouble() * math.pi * 2;
+          final distance = .9 + _random.nextDouble() * .65;
+          final x = _px + math.cos(angle) * distance;
+          final y = _py + math.sin(angle) * distance;
           _enemies.add(_newEnemy(x, y, EnemyType.values[_random.nextInt(4)]));
         }
       }
@@ -855,6 +869,7 @@ class _GameScreenState extends State<GameScreen> {
                         _weapon,
                         _benches,
                         _trees,
+                        _hedges,
                         _lampPosts,
                         _pigeons,
                         _walkTime,
