@@ -22,9 +22,9 @@ class WeaponDefinition extends ContentDefinition {
     required super.label,
     required this.attack,
     required this.cooldown,
-    this.range = 1.2,
+    this.range = 1.3,
     this.damage = 30,
-    this.projectileSpeed = .012,
+    this.projectileSpeed = .010,
     this.hitRadius = .035,
   }) : super(kind: ContentKind.weapon);
 
@@ -46,14 +46,14 @@ class PassiveDefinition extends ContentDefinition {
 
 class GameContent {
   static const definitions = <ContentDefinition>[
-    WeaponDefinition(name: 'Cane of Consequences', icon: '⌁', label: 'CANE', attack: WeaponAttack.cane, cooldown: 3, range: .12, damage: 20),
-    WeaponDefinition(name: 'Upgraded Cane', icon: '⌁', label: 'CANE +', attack: WeaponAttack.cane, cooldown: 3, range: .15, damage: 26),
+    WeaponDefinition(name: 'Cane of Consequences', icon: '⌁', label: 'CANE', attack: WeaponAttack.cane, cooldown: 2.5, range: .15, damage: 25),
+    WeaponDefinition(name: 'Upgraded Cane', icon: '⌁', label: 'CANE +', attack: WeaponAttack.cane, cooldown: 2.5, range: .18, damage: 30),
     WeaponDefinition(name: 'Werthers Originals', icon: '●', label: 'CANDY', attack: WeaponAttack.candy, cooldown: 2),
     WeaponDefinition(name: 'Noisy Grandkid', icon: '↻', label: 'BABY', attack: WeaponAttack.noisy, cooldown: 5, damage: 40, projectileSpeed: .006),
-    WeaponDefinition(name: 'Canvas Trolleys', icon: '▣', label: 'CARTS', attack: WeaponAttack.trolley, cooldown: 10),
+    WeaponDefinition(name: 'Canvas Trolleys', icon: '▣', label: 'CARTS', attack: WeaponAttack.trolley, cooldown: 12, range: 1.9, damage: 50),
     WeaponDefinition(name: 'Thermos Tea', icon: '☕', label: 'TEA', attack: WeaponAttack.tea, cooldown: 10, damage: 35),
-    WeaponDefinition(name: 'Pocket Radio', icon: '♫', label: 'RADIO', attack: WeaponAttack.radio, cooldown: 8, range: 2, damage: 15, hitRadius: .06),
-    WeaponDefinition(name: 'Bingo Blaster', icon: '✦', label: 'BINGO', attack: WeaponAttack.bingo, cooldown: 3.5, damage: 22),
+    WeaponDefinition(name: 'Pocket Radio', icon: '♫', label: 'RADIO', attack: WeaponAttack.radio, cooldown: 12, range: 1.7, damage: 10, hitRadius: .06),
+    WeaponDefinition(name: 'Bingo Blaster', icon: '✦', label: 'BINGO', attack: WeaponAttack.bingo, cooldown: 3.5, range: 2, damage: 22),
     WeaponDefinition(name: 'Garden Hose', icon: '≈', label: 'HOSE', attack: WeaponAttack.hose, cooldown: 4.5, damage: 24, hitRadius: .05),
     PassiveDefinition(name: 'Comfy Slippers', icon: '靴', label: 'SPEED'),
     PassiveDefinition(name: 'Reading Glasses', icon: '⌕', label: 'FOCUS'),
